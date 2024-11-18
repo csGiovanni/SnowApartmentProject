@@ -85,7 +85,8 @@ var vertexColors = [
         vec4(0.6, 0.6, 0.6, 1.0), // gray
         vec4(0.5, 0.5, 0.5, 1.0), // gray (shade)
         vec4(0.9, 0.9, 0.9, 1.0), // snow
-        vec4(0.7, 0.7, 0.7, 1.0) // snow
+        vec4(0.7, 0.7, 0.7, 1.0), // snow (shade)
+        vec4(0.2, 0.2, 0.2, 1.0) // windows
     ];
 
 
@@ -130,8 +131,59 @@ function cube(width, height, thickness, locX, locY, locZ, colorIndex){
     quad(index + 3,index + 1,index + 5,index + 7,colorIndex + 1);
     quad(index + 7,index + 5,index + 4,index + 6,colorIndex);
     quad(index + 6,index + 4,index,index + 2,colorIndex + 1);
-    quad(index,index + 4,index + 5,index + 1,colorIndex);
+    quad(index,index + 4,index + 5,index + 1,colorIndex + 1);
     quad(index + 2,index + 6,index + 7,index + 3,colorIndex + 1);
+}
+function cylinder(points, height, radius, locX, locY, locZ,colorIndex){
+    // Circle variables
+    
+	var SIZE = points; // circle slices
+	var angle = 2*Math.PI/SIZE;
+    var center = vec4(locX,locY,locZ,1.0);
+    var topIndices = [];
+    var bottomIndices = [];
+    var bottomCenterIndex = vertices.length;
+
+    vertices.push(center);
+    var index = vertices.length;
+
+    // bottom circle vertices
+	for  (var i=0; i<SIZE+1; i++) {
+        var newBottomVertex = vec4(center[0]+radius*Math.cos(i*angle), locY, center[2]+radius*Math.sin(i*angle), 1.0);
+	    vertices.push(newBottomVertex);
+        bottomIndices.push(index + i);
+	}
+
+    center = vec4(locX, locY + height, locZ, 1.0);
+    var topCenterIndex = vertices.length;
+
+    vertices.push(center);
+    index = vertices.length;
+
+    // top circle vertices
+	for  (var i=0; i<SIZE+1; i++) {
+        var newTopVertex = vec4(center[0]+radius*Math.cos(i*angle), locY + height, center[2]+radius*Math.sin(i*angle), 1.0);
+	    vertices.push(newTopVertex);
+        topIndices.push(index + i);
+	}
+
+    // Make bottom circle
+    for(var i=0; i<bottomIndices.length - 1; i++){
+        tri(bottomCenterIndex, bottomIndices[i], bottomIndices[i + 1], colorIndex + 1);
+    }
+    // Make top circle
+    for(var i=0; i<topIndices.length - 1; i++){
+        tri(topCenterIndex, topIndices[i], topIndices[i + 1], colorIndex + 1);
+    }
+    //Make walls
+    for(var i=0; i<topIndices.length - 1;i++){
+        if(i % 2 == 0){
+            quad(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex + 1);
+        }
+        else{
+            quad(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex);
+        }
+    }
 }
 
 // Each face is formed with two triangles
@@ -196,7 +248,11 @@ function MakeBuilding(xLoc,yLoc,zLoc){
     cube(1,3,1,xLoc + 6,yLoc,zLoc,3);
     cube(1,3,1,xLoc + 9,yLoc,zLoc,3);
     // Top part of building
-    cube(12,3,6,xLoc - 1,yLoc + 3,zLoc - 4,3);
+    cube(15,3,6,xLoc - 1,yLoc + 3,zLoc - 4,3);
+    // Hind part of building
+    cube(24,12,6,xLoc - 1,yLoc,zLoc - 10,3);
+    // Right part of building
+    cylinder(8,15,10,xLoc + 20,yLoc,zLoc -5,3);
 
 }
 
