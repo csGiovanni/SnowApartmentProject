@@ -15,16 +15,8 @@ var far = 50;
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
-/*
-      E ----  F
-     /|     / |
-    A ---  B  |
-    | |    |  |
-    | G----+- H
-    |/     | /
-    C------D/                 */
 var vertices = [
-        //Streetlight Top (Timmy Do)
+        //Streetlight Top and Building Structure (Timmy Do)
         vec4( -1,  0.5,  -0.8, 1.0 ),  // A (0)
         vec4( 1,  0.5,  -0.8, 1.0 ),  // B (1)
         vec4( -1,  0.5,  0.8, 1.0 ),  // C (2)
@@ -186,7 +178,6 @@ function cylinder(points, height, radius, locX, locY, locZ,colorIndex){
     }
 }
 
-// Each face is formed with two triangles
 function MakeStreetLamp() {
     //Top
     tri(0,8,4,1);//AIE
