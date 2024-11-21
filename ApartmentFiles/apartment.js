@@ -5,6 +5,8 @@
  * Objects:
  *  Building, Street Lamp : Timmy Do
  *  Trash Can, Traffic Cone : Giovanni Del Valle
+ * 
+ * Version Control : GitHub
  */
 
 
