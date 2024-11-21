@@ -12,9 +12,15 @@ var x_min = -8;
 var near = -50;
 var far = 50;
 
+var MatrixStack = [];
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
 
+var ConeIndex, ConeAmount;
+var CylinderIndex, CylinderAmount;
+var CylinderIndex2, CylinderAmount2; // TODO : Remove and Materials
+
+var dynamicVertices = [];
 var vertices = [
         //Streetlight Top and Building Structure (Timmy Do)
         vec4( -1,  0.5,  -0.8, 1.0 ),  // A (0)
@@ -67,6 +73,10 @@ var vertices = [
 
     ];
 
+function rgb(r, g, b, a) {
+    return vec4(r / 255, g / 255, b / 255, a / 255)
+}
+
 var vertexColors = [
         // Lamp colors
         vec4(0.5, 0.5, 0.5, 1.0), // Metal
@@ -78,7 +88,17 @@ var vertexColors = [
         vec4(0.5, 0.5, 0.5, 1.0), // gray (shade)
         vec4(0.9, 0.9, 0.9, 1.0), // snow
         vec4(0.7, 0.7, 0.7, 1.0), // snow (shade)
-        vec4(0.2, 0.2, 0.2, 1.0) // windows
+        vec4(0.2, 0.2, 0.2, 1.0), // windows
+
+        // Trash Can Colors
+        rgb(3, 132, 224, 255),
+        rgb(1, 86, 147, 255),
+
+        // Traffic Cone Colors,
+        rgb(205, 205, 205, 255), // Gray
+        rgb(255, 255, 255, 255), // White
+        rgb(250, 105, 61, 255), // Bright Orange
+        rgb(249, 231, 14, 255), // Yellow
     ];
 
 
@@ -107,6 +127,37 @@ function tri(a,b,c,colorIndex){
      pointsArray.push(vertices[c]);
      colorsArray.push(vertexColors[colorIndex]);
      numVertices = numVertices + 3;
+}
+// Everything made by tri() and quad() are all drawn at once. These dynamic functions will allow us to draw only some shapes (and repeated)
+// THESE NEED TO BE USED ONLY AFTER ALL tri() AND quad() CALLS SINCE THIS MODIFIES pointsArray AND colorsArray WITHOUT CHANGING numVertices
+// THIS CAN LEAD TO numVertices BEING "OFF"
+// It is up to the user of these functions to record the index and number of vertices created
+function triDynamic(a, b, c, colorIndex) {
+    let index = pointsArray.length;
+    pointsArray.push(dynamicVertices[a]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[b]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[c]);
+    colorsArray.push(vertexColors[colorIndex]);
+    console.log(dynamicVertices[a][0])
+    return [index, /* Number of points created */ 3]
+}
+function quadDynamic(a, b, c, d, colorIndex) {
+    let index = pointsArray.length;
+    pointsArray.push(dynamicVertices[a]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[b]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[c]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[a]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[c]);
+    colorsArray.push(vertexColors[colorIndex]);
+    pointsArray.push(dynamicVertices[d]);
+    colorsArray.push(vertexColors[colorIndex]);
+    return [index, /* Number of points created */ 6]
 }
 function cube(width, height, thickness, locX, locY, locZ, colorIndex){
     var index = vertices.length;
@@ -247,6 +298,373 @@ function MakeBuilding(xLoc,yLoc,zLoc){
 
 }
 
+function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
+    // Remember where our trash can begins
+    let trash_can_index = vertices.length;
+    let radius = can_radius;
+    let precision = 12;
+
+    // Draw Trash can strip
+    let corners = [
+                    vec3(radius, strip_height, strip_width), //upper_corner1
+                    vec3(radius, strip_height, -strip_width), //upper_corner2
+                    vec3(radius, -strip_height, -strip_width), //lower_corner1
+                    vec3(radius, -strip_height, strip_width), //lower_corner2
+    ];
+
+    // Make the trash can grow taller upward rather than grow through the floor too
+    for (let i = 0; i < 4; i++) {
+        corners[i][1] = (corners[i][1] + strip_height) / 2;
+    }
+
+    let tau = Math.PI * 2;
+    for (let i = 0; i < precision; i++) {
+        let angle = tau / precision * i;
+        // Remember where our strip begins
+        let strip_index = vertices.length;
+        
+        let new_corners = []
+        // Find rotated strip
+        for (let j = 0; j < 4; j++) {
+            let longer;
+            if (i % (precision/4) ==0) {
+                longer = 1.5;
+                
+            }
+            else
+            {
+                longer = 1.0;
+            }
+
+            let cx = corners[j][0];
+            let cz = corners[j][2];
+            let current_angle = Math.atan2(cz, cx);
+            let current_radius = Math.sqrt(cx * cx + cz * cz)
+            // Displace the angle to find the new coordinates
+            let sin = Math.sin(current_angle + angle);
+            let cos = Math.cos(current_angle + angle);
+            new_corners.push(vec4(
+                cos * current_radius,
+                corners[j][1] * longer,
+                sin * current_radius,
+                1
+            ))
+        }
+
+        // Displace by x, y, z as center
+        for (let j = 0; j < 4; j++) {
+            let dx = new_corners[j][0];
+            let dy = new_corners[j][1];
+            let dz = new_corners[j][2];
+            // Record in vertices array
+            vertices.push(vec4(
+                dx + x,
+                dy + y,
+                dz + z,
+                1
+            ));
+        }
+        // Create current strip
+        quad(strip_index, strip_index + 1, strip_index + 2, strip_index + 3, 8 + i % 2)
+    }
+
+
+    // Create bottom base
+    cylinder(precision, 0.2, radius, x, y, z, 8)
+
+    // Create top lid
+    // Represent mesh as a flat grid, then raise each point
+    let lid_grid = [];
+    // lid[i][j] = index
+    let count = 7
+    let center = [(count - 1) / 2, (count - 1) / 2]
+    let max_dist = Math.sqrt(center[0] * center[0] + center[1] * center[1])
+    let fz = (X, Y) => {
+        let dx = X - center[0];
+        let dy = Y - center[1];
+        let dist = Math.sqrt(dx * dx + dy * dy)
+        return 1 - dist / max_dist;
+    };
+    // Remember where our lid begins
+    let lid_index = vertices.length;
+    for (let i = 0; i < count; i++) {
+        lid_grid[i] = [];
+        for (let j = 0; j < count; j++) {
+            let scale = radius / count;
+            // Mult by scale to make the size of the grid from 1x1
+            // Offset by -0.5 * radius to center grid
+            // Offset by scale / 2 to perfectly center
+            let point = vec4(   (i) * scale - 0.5 * radius + scale / 2, 
+                                (j) * scale - 0.5 * radius + scale / 2, 
+                                fz(i, j) * scale, 1);
+            point = vec4(
+                point[0] * 2.75 + x,
+                point[2] * 2.75 + y + strip_height * 1.48,
+                point[1] * 2.75 + z,
+                1
+            )
+            lid_grid[i][j] = lid_index;
+            lid_index++;
+            vertices.push(point);
+        }
+    }
+    
+    
+
+    for (let i = 0; i < lid_grid.length - 1; i++) {
+        for (let j = 0; j < lid_grid[i].length - 1; j++) {
+            quad(lid_grid[i][j], lid_grid[i + 1][j],
+                lid_grid[i + 1][j + 1], lid_grid[i][j + 1],
+                // Calculate which color to make checker pattern
+                 8 + ( (i % 2) + (j % 2)) % 2
+            )
+        }
+    }
+
+}
+// Dimensions will be 1x1x1 and will rely on transformations
+// These should only be called once
+function DynamicCone() {
+    var points=[];
+    let radius = 1;
+    let numSlices=16;
+	var angleIncrement = 2*Math.PI/numSlices;
+
+    // Remember where our Cone Begins
+    let cone_index = dynamicVertices.length;
+    ConeIndex = pointsArray.length;
+    ConeAmount = 0;
+
+    // side triangle points
+    for (var angle=0; angle < (2*Math.PI); angle += angleIncrement)  {
+        // top point
+        dynamicVertices.push(vec4(0, radius, 0, 1)); // height of the cone > radius of the bottom circle
+
+        // the other two points
+	      var x=radius*Math.cos(angle);
+        var y=radius*Math.sin(angle);
+        dynamicVertices.push(vec4(x, 0, y, 1));
+
+        x=radius*Math.cos(angle+angleIncrement);
+        y=radius*Math.sin(angle+angleIncrement);
+        dynamicVertices.push(vec4(x, 0, y, 1));
+    }
+
+    for (let i = cone_index; i < dynamicVertices.length - 2; i++) {
+        let info = triDynamic(i, i + 1, i + 2, 12 + i % 2);
+        ConeAmount += info[1];
+    }
+
+    cone_index = dynamicVertices.length;
+    // another circle to cover the bottom
+    for (var angle=0; angle <=2*Math.PI; angle += angleIncrement)  {
+        // center point
+        dynamicVertices.push(vec4(0, 0, 0, 1));
+
+        // counter clock wise  --> the inside face is the front face
+	    var x=radius*Math.cos(angle);
+        var y=radius*Math.sin(angle);
+        dynamicVertices.push(vec4(x, 0, y, 1));
+
+	    x=radius*Math.cos(angle+angleIncrement);
+        y=radius*Math.sin(angle+angleIncrement);
+
+        dynamicVertices.push(vec4(x, 0, y, 1));
+    }
+
+    
+    for (let i = cone_index; i < dynamicVertices.length - 2; i++) {
+        let info = triDynamic(i, i + 1, i + 2, 12 + i % 2);
+        ConeAmount += info[1];
+    }
+}
+function DynamicCylinder(points, colorIndex) {
+    let height = 1;
+    let radius = 1;
+    let locX = 0;
+    let locY = 0;
+    let locZ = 0;
+    // Circle variables
+    
+	var SIZE = points; // circle slices
+	var angle = 2*Math.PI/SIZE;
+    var center = vec4(locX,locY,locZ,1.0);
+    var topIndices = [];
+    var bottomIndices = [];
+    var bottomCenterIndex = dynamicVertices.length;
+
+    CylinderIndex = pointsArray.length;
+    CylinderAmount = 0;
+
+    dynamicVertices.push(center);
+    var index = dynamicVertices.length;
+
+    // bottom circle vertices
+	for  (var i=0; i<SIZE+1; i++) {
+        var newBottomVertex = vec4(center[0]+radius*Math.cos(i*angle), locY, center[2]+radius*Math.sin(i*angle), 1.0);
+	    dynamicVertices.push(newBottomVertex);
+        bottomIndices.push(index + i);
+	}
+
+    center = vec4(locX, locY + height, locZ, 1.0);
+    var topCenterIndex = dynamicVertices.length;
+
+    dynamicVertices.push(center);
+    index = dynamicVertices.length;
+
+    // top circle vertices
+	for  (var i=0; i<SIZE+1; i++) {
+        var newTopVertex = vec4(center[0]+radius*Math.cos(i*angle), locY + height, center[2]+radius*Math.sin(i*angle), 1.0);
+	    dynamicVertices.push(newTopVertex);
+        topIndices.push(index + i);
+	}
+
+    
+
+    // Make bottom circle
+    for(var i=0; i<bottomIndices.length - 1; i++){
+        let info = triDynamic(bottomCenterIndex, bottomIndices[i], bottomIndices[i + 1], colorIndex + 1);
+        let index = info[0];
+        let amount_added = info[1];
+        CylinderAmount += amount_added;
+    }
+    // Make top circle
+    for(var i=0; i<topIndices.length - 1; i++){
+        let info = triDynamic(topCenterIndex, topIndices[i], topIndices[i + 1], colorIndex + 1);
+        let amount_added = info[1];
+        CylinderAmount += amount_added;
+    }
+    //Make walls
+    for(var i=0; i<topIndices.length - 1;i++){
+        if(i % 2 == 0){
+            let info = quadDynamic(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex + 1);
+            let amount_added = info[1];
+            CylinderAmount += amount_added;
+        }
+        else{
+            let info = quadDynamic(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex);
+            let amount_added = info[1];
+            CylinderAmount += amount_added;
+        }
+    }
+}
+
+// We need to remove this and implement materials so we can change the colors of these objects
+function DynamicCylinderGray(points, colorIndex) {
+    let height = 1;
+    let radius = 1;
+    let locX = 0;
+    let locY = 0;
+    let locZ = 0;
+    // Circle variables
+    
+	var SIZE = points; // circle slices
+	var angle = 2*Math.PI/SIZE;
+    var center = vec4(locX,locY,locZ,1.0);
+    var topIndices = [];
+    var bottomIndices = [];
+    var bottomCenterIndex = dynamicVertices.length;
+
+    CylinderIndex2 = pointsArray.length;
+    CylinderAmount2 = 0;
+
+    dynamicVertices.push(center);
+    var index = dynamicVertices.length;
+
+    // bottom circle vertices
+	for  (var i=0; i<SIZE+1; i++) {
+        var newBottomVertex = vec4(center[0]+radius*Math.cos(i*angle), locY, center[2]+radius*Math.sin(i*angle), 1.0);
+	    dynamicVertices.push(newBottomVertex);
+        bottomIndices.push(index + i);
+	}
+
+    center = vec4(locX, locY + height, locZ, 1.0);
+    var topCenterIndex = dynamicVertices.length;
+
+    dynamicVertices.push(center);
+    index = dynamicVertices.length;
+
+    // top circle vertices
+	for  (var i=0; i<SIZE+1; i++) {
+        var newTopVertex = vec4(center[0]+radius*Math.cos(i*angle), locY + height, center[2]+radius*Math.sin(i*angle), 1.0);
+	    dynamicVertices.push(newTopVertex);
+        topIndices.push(index + i);
+	}
+
+    
+
+    // Make bottom circle
+    for(var i=0; i<bottomIndices.length - 1; i++){
+        let info = triDynamic(bottomCenterIndex, bottomIndices[i], bottomIndices[i + 1], colorIndex + 1);
+        let index = info[0];
+        let amount_added = info[1];
+        CylinderAmount2 += amount_added;
+    }
+    // Make top circle
+    for(var i=0; i<topIndices.length - 1; i++){
+        let info = triDynamic(topCenterIndex, topIndices[i], topIndices[i + 1], colorIndex + 1);
+        let amount_added = info[1];
+        CylinderAmount2 += amount_added;
+    }
+    //Make walls
+    for(var i=0; i<topIndices.length - 1;i++){
+        let info = quadDynamic(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex + i % 2);
+        let amount_added = info[1];
+        CylinderAmount2 += amount_added;
+    }
+}
+
+function DrawCylinder() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, CylinderIndex, CylinderAmount );
+}
+
+function DrawCylinder2() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, CylinderIndex2, CylinderAmount2 );
+}
+
+function DrawCone() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, ConeIndex, ConeAmount );
+}
+
+function DrawTrafficCone() {
+    // Draw Base
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, scale4(2, 0.1, 2));
+    DrawCylinder2();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Draw Cone
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, scale4(1, 2, 1));
+    DrawCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Draw Strips
+
+    MatrixStack.push(modelViewMatrix);
+    let transform = mult(translate(0, 0.85, 0), scale4(0.7, 0.2, 0.7));
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(translate(0, 1.25, 0), scale4(0.5, 0.2, 0.5));
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+}
+
+function scale4(a, b, c) {
+    var result = mat4();
+    result[0][0] = a;
+    result[1][1] = b;
+    result[2][2] = c;
+    return result;
+}
+
 // namespace contain all the project information
 var AllInfo = {
 
@@ -285,9 +703,17 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    MakeStreetLamp();  // created the color cube - point positions and face colors
+    // MakeStreetLamp();  // created the color cube - point positions and face colors
 
     MakeBuilding(1.5,-0.8,-0.5);
+    MakeTrashCan(-8, 0, 5, 4, .5, 3);
+    // MakeTrashCan(5, 0, 0 , 4, .5, 3);
+
+    // DYNAMIC CALLS DOWN HERE ONLY
+
+    DynamicCylinder(8, 10);
+    DynamicCylinderGray(8, 3);
+    DynamicCone();
 
     var cBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
@@ -435,4 +861,7 @@ var render = function() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
+
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,0,15), scale4(2, 2, 2)));
+    DrawTrafficCone();
 }
