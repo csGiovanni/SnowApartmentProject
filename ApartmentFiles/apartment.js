@@ -301,12 +301,67 @@ function MakeBuilding(xLoc,yLoc,zLoc){
     cube(1,3,1,xLoc + 3,yLoc,zLoc,3);
     cube(1,3,1,xLoc + 6,yLoc,zLoc,3);
     cube(1,3,1,xLoc + 9,yLoc,zLoc,3);
-    // Top part of building
+    // Top part of building ( 1st floor)
     cube(15,3,6,xLoc - 1,yLoc + 3,zLoc - 4,3);
+    // Pillars (2nd floor)
+    cube(1,3,1,xLoc,yLoc + 6,zLoc,3);
+    cube(1,3,1,xLoc + 3,yLoc + 6,zLoc,3);
+    cube(1,3,1,xLoc + 6,yLoc + 6,zLoc,3);
+    cube(1,3,1,xLoc + 9,yLoc + 6,zLoc,3);
+    // Top part of building (2nd floor)
+    cube(15,3,6,xLoc - 1,yLoc + 9,zLoc - 4,3);
     // Hind part of building
     cube(24,12,6,xLoc - 1,yLoc,zLoc - 10,3);
-    // Right part of building
+    //Railing (2nd floor)
+    cube(14.5,1,.5,xLoc - 0.5,yLoc+6,zLoc,5);
+    cube(.5,1,5,xLoc - 0.5,yLoc+6,zLoc-5,5);
+
+    // Middle part of building
     cylinder(8,15,10,xLoc + 20,yLoc,zLoc -5,3);
+    cylinder(8,1,10.5,xLoc + 20,yLoc+6,zLoc -5,5);
+
+    // Pillars
+    cube(1,3,1,xLoc + 30,yLoc,zLoc,3);
+    cube(1,3,1,xLoc + 33,yLoc,zLoc,3);
+    cube(1,3,1,xLoc + 36,yLoc,zLoc,3);
+    cube(1,3,1,xLoc + 39,yLoc,zLoc,3);
+    // Top part of building ( 1st floor)
+    cube(15,3,6,xLoc + 26,yLoc + 3,zLoc - 4,3);
+    // Pillars (2nd floor)
+    cube(1,3,1,xLoc + 30,yLoc + 6,zLoc,3);
+    cube(1,3,1,xLoc + 33,yLoc + 6,zLoc,3);
+    cube(1,3,1,xLoc + 36,yLoc + 6,zLoc,3);
+    cube(1,3,1,xLoc + 39,yLoc + 6,zLoc,3);
+    // Top part of building (2nd floor)
+    cube(15,3,6,xLoc + 26,yLoc + 9,zLoc - 4,3);
+    // Hind part of building
+    cube(24,12,6,xLoc + 17,yLoc,zLoc - 10,3);
+    // Railing (2nd floor)
+    cube(14.5,1,.5,xLoc + 26,yLoc+6,zLoc,5);
+    cube(.5,1,5,xLoc + 40,yLoc+6,zLoc-5,5);
+
+    // Doors
+    cube(1.5,2.5,0.1,xLoc + 7.25,yLoc + 6,zLoc-4,9);
+    cube(1.5,2.5,0.1,xLoc + 1.25,yLoc + 6,zLoc-4,9);
+    cube(1.5,2.5,0.1,xLoc + 7.25,yLoc,zLoc-4,9);
+    cube(1.5,2.5,0.1,xLoc + 1.25,yLoc,zLoc-4,9);
+    
+    cube(1.5,2.5,0.1,xLoc + 37.25,yLoc + 6,zLoc-4,9);
+    cube(1.5,2.5,0.1,xLoc + 31.25,yLoc + 6,zLoc-4,9);
+    cube(1.5,2.5,0.1,xLoc + 37.25,yLoc,zLoc-4,9);
+    cube(1.5,2.5,0.1,xLoc + 31.25,yLoc,zLoc-4,9);
+
+    cube(20,4,3,xLoc + 10.23,yLoc+6,zLoc-3.6,3);
+    cube(20.2,2.5,1.5,xLoc + 10.22,yLoc+6,zLoc-2.7,9);
+
+    // Entrance door
+    cube(3,2.5,0.1,xLoc + 18.5,yLoc,zLoc+8.9,9);
+    cube(6,6,5.9,xLoc + 17,yLoc,zLoc+3,3);
+    cube(7.2,1,5.9,xLoc + 16.5,yLoc+6,zLoc+3.5,5);
+
+    // Roof
+    cylinder(8,1,10.5,xLoc + 20,yLoc+15,zLoc -5,5);
+    cube(43,1,13,xLoc-1.5,yLoc+12,zLoc-10.5,5);
 
 }
 
