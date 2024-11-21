@@ -644,7 +644,7 @@ function DrawCone() {
 function DrawTrafficCone() {
     // Draw Base
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, scale4(2, 0.1, 2));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,-0.1,0), scale4(2, 0.1, 2)));
     DrawCylinder2();
     modelViewMatrix = MatrixStack.pop();
 
