@@ -1,3 +1,13 @@
+/**
+ * Project 4 Part 1
+ * Giovanni Del Valle, Timmy Do
+ * 
+ * Objects:
+ *  Building, Street Lamp : Timmy Do
+ *  Trash Can, Traffic Cone : Giovanni Del Valle
+ */
+
+
 var canvas, gl;
 
 var numVertices  = 0;
@@ -703,7 +713,7 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    // MakeStreetLamp();  // created the color cube - point positions and face colors
+    MakeStreetLamp();  // created the color cube - point positions and face colors
 
     MakeBuilding(1.5,-0.8,-0.5);
     MakeTrashCan(-8, 0, 5, 4, .5, 3);
