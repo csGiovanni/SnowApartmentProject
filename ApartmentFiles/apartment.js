@@ -54,60 +54,71 @@ var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
 var diffuseProductLoc, ambientProductLoc;
 
+var ApartmentIndex, ApartmentAmount;
+var ApartmentRoofIndex, ApartmentRoofAmount;
+var ApartmentRailIndex, ApartmentRailAmount;
+var ApartmentDoorIndex, ApartmentDoorAmount;
+
+var StreetLampHeadIndex, StreetLampHeadAmount;
+var StreetLightIndex, StreeLightAmount;
+var StreetLampPoleIndex, StreetLampPoleAmount;
+
 var ConeIndex, ConeAmount;
 var CylinderIndex, CylinderAmount;
 var TrashCanLidIndex, TrashCanStripIndex;
 var TrashCanLidAmount, TrashCanStripAmount;
 var FountainIndex, FountainAmount;
 
-var dynamicVertices = [];
+var dynamicVertices = [
+    //Streetlight Top and Building Structure (Timmy Do)
+    vec4( -1,  0.5,  -0.8, 1.0 ),  // A (0)
+    vec4( 1,  0.5,  -0.8, 1.0 ),  // B (1)
+    vec4( -1,  0.5,  0.8, 1.0 ),  // C (2)
+    vec4( 1,  0.5,  0.8, 1.0 ), // D (3)
+    vec4( -0.8,  0.5,  -1, 1.0 ),  // E (4)
+    vec4( 0.8,  0.5,  -1, 1.0 ),  // F (5)
+    vec4( -0.8,  0.5,  1, 1.0 ),  // G (6)
+    vec4( 0.8,  0.5,  1, 1.0 ), // H (7)
+
+    vec4( -0.7,  0.8,  -0.7, 1.0 ),  // I (8)
+    vec4( 0.7,  0.8,  -0.7, 1.0 ),  // J (9)
+    vec4( -0.7,  0.8,  0.7, 1.0 ),  // K (10)
+    vec4( 0.7,  0.8,  0.7, 1.0 ), // L (11)
+
+    vec4( -1,  -0.5,  -0.8, 1.0 ),  // M (12)
+    vec4( 1,  -0.5,  -0.8, 1.0 ),  // N (13)
+    vec4( -1,  -0.5,  0.8, 1.0 ),  // O (14)
+    vec4( 1,  -0.5,  0.8, 1.0 ), // P (15)
+    vec4( -0.8,  -0.5,  -1, 1.0 ),  // Q (16)
+    vec4( 0.8,  -0.5,  -1, 1.0 ),  // R (17)
+    vec4( -0.8,  -0.5,  1, 1.0 ),  // S (18)
+    vec4( 0.8,  -0.5,  1, 1.0 ), // T (19)
+
+    vec4( -0.7,  -0.8,  -0.7, 1.0 ),  // U (20)
+    vec4( 0.7,  -0.8,  -0.7, 1.0 ),  // V (21)
+    vec4( -0.7,  -0.8,  0.7, 1.0 ),  // W (22)
+    vec4( 0.7,  -0.8,  0.7, 1.0 ), // X (23)
+
+    vec4( -0.8,  0.4,  -0.6, 1.0 ),  // A' (24)
+    vec4( 0.8,  0.4,  -0.6, 1.0 ),  // B' (25)
+    vec4( -0.8,  0.4,  0.6, 1.0 ),  // C' (26)
+    vec4( 0.8,  0.4,  0.6, 1.0 ), // D' (27)
+    vec4( -0.6,  0.4,  -0.8, 1.0 ),  // E' (28)
+    vec4( 0.6,  0.4,  -0.8, 1.0 ),  // F' (29)
+    vec4( -0.6,  0.4,  0.8, 1.0 ),  // G' (30)
+    vec4( 0.6,  0.4,  0.8, 1.0 ), // H' (31)
+
+    vec4( -0.8,  -0.4,  -0.6, 1.0 ),  // M' (32)
+    vec4( 0.8,  -0.4,  -0.6, 1.0 ),  // N' (33)
+    vec4( -0.8,  -0.4,  0.6, 1.0 ),  // O'(34)
+    vec4( 0.8,  -0.4,  0.6, 1.0 ), // P' (35)
+    vec4( -0.6,  -0.4,  -0.8, 1.0 ),  // Q' (36)
+    vec4( 0.6,  -0.4,  -0.8, 1.0 ),  // R' (37)
+    vec4( -0.6,  -0.4,  0.8, 1.0 ),  // S' (38)
+    vec4( 0.6,  -0.4,  0.8, 1.0 ) // T' (39)
+];
 var vertices = [
-        //Streetlight Top and Building Structure (Timmy Do)
-        vec4( -1,  0.5,  -0.8, 1.0 ),  // A (0)
-        vec4( 1,  0.5,  -0.8, 1.0 ),  // B (1)
-        vec4( -1,  0.5,  0.8, 1.0 ),  // C (2)
-        vec4( 1,  0.5,  0.8, 1.0 ), // D (3)
-        vec4( -0.8,  0.5,  -1, 1.0 ),  // E (4)
-        vec4( 0.8,  0.5,  -1, 1.0 ),  // F (5)
-        vec4( -0.8,  0.5,  1, 1.0 ),  // G (6)
-        vec4( 0.8,  0.5,  1, 1.0 ), // H (7)
-
-        vec4( -0.7,  0.8,  -0.7, 1.0 ),  // I (8)
-        vec4( 0.7,  0.8,  -0.7, 1.0 ),  // J (9)
-        vec4( -0.7,  0.8,  0.7, 1.0 ),  // K (10)
-        vec4( 0.7,  0.8,  0.7, 1.0 ), // L (11)
-
-        vec4( -1,  -0.5,  -0.8, 1.0 ),  // M (12)
-        vec4( 1,  -0.5,  -0.8, 1.0 ),  // N (13)
-        vec4( -1,  -0.5,  0.8, 1.0 ),  // O (14)
-        vec4( 1,  -0.5,  0.8, 1.0 ), // P (15)
-        vec4( -0.8,  -0.5,  -1, 1.0 ),  // Q (16)
-        vec4( 0.8,  -0.5,  -1, 1.0 ),  // R (17)
-        vec4( -0.8,  -0.5,  1, 1.0 ),  // S (18)
-        vec4( 0.8,  -0.5,  1, 1.0 ), // T (19)
-
-        vec4( -0.7,  -0.8,  -0.7, 1.0 ),  // U (20)
-        vec4( 0.7,  -0.8,  -0.7, 1.0 ),  // V (21)
-        vec4( -0.7,  -0.8,  0.7, 1.0 ),  // W (22)
-        vec4( 0.7,  -0.8,  0.7, 1.0 ), // X (23)
-
-        vec4( -0.8,  0.4,  -0.6, 1.0 ),  // A' (24)
-        vec4( 0.8,  0.4,  -0.6, 1.0 ),  // B' (25)
-        vec4( -0.8,  0.4,  0.6, 1.0 ),  // C' (26)
-        vec4( 0.8,  0.4,  0.6, 1.0 ), // D' (27)
-        vec4( -0.6,  0.4,  -0.8, 1.0 ),  // E' (28)
-        vec4( 0.6,  0.4,  -0.8, 1.0 ),  // F' (29)
-        vec4( -0.6,  0.4,  0.8, 1.0 ),  // G' (30)
-        vec4( 0.6,  0.4,  0.8, 1.0 ), // H' (31)
-
-        vec4( -0.8,  -0.4,  -0.6, 1.0 ),  // M' (32)
-        vec4( 0.8,  -0.4,  -0.6, 1.0 ),  // N' (33)
-        vec4( -0.8,  -0.4,  0.6, 1.0 ),  // O'(34)
-        vec4( 0.8,  -0.4,  0.6, 1.0 ), // P' (35)
-        vec4( -0.6,  -0.4,  -0.8, 1.0 ),  // Q' (36)
-        vec4( 0.6,  -0.4,  -0.8, 1.0 ),  // R' (37)
-        vec4( -0.6,  -0.4,  0.8, 1.0 ),  // S' (38)
-        vec4( 0.6,  -0.4,  0.8, 1.0 ) // T' (39)
+        
 
 
 
@@ -269,22 +280,22 @@ function quadDynamic(a, b, c, d, colorIndex) {
     return [index, /* Number of points created */ 6]
 }
 function cube(width, height, thickness, locX, locY, locZ, colorIndex){
-    var index = vertices.length;
-    vertices.push(vec4(locX,  locY + height,  locZ + thickness, 1.0 ));  // A (0)
-    vertices.push(vec4(locX + width,  locY + height,  locZ + thickness, 1.0 ));  // B (1)
-    vertices.push(vec4(locX, locY, locZ + thickness, 1.0 ));  // C (2)
-    vertices.push(vec4(locX + width, locY,  locZ + thickness, 1.0 )); // D (3)
-    vertices.push(vec4(locX, locY + height, locZ, 1.0 )); // E (4)
-    vertices.push(vec4(locX + width,  locY + height, locZ, 1.0 )); // F (5)
-    vertices.push(vec4(locX, locY, locZ, 1.0 )); // G (6)
-    vertices.push(vec4(locX + width, locY, locZ, 1.0 ));  // H (7)
+    var index = dynamicVertices.length;
+    dynamicVertices.push(vec4(locX,  locY + height,  locZ + thickness, 1.0 ));  // A (0)
+    dynamicVertices.push(vec4(locX + width,  locY + height,  locZ + thickness, 1.0 ));  // B (1)
+    dynamicVertices.push(vec4(locX, locY, locZ + thickness, 1.0 ));  // C (2)
+    dynamicVertices.push(vec4(locX + width, locY,  locZ + thickness, 1.0 )); // D (3)
+    dynamicVertices.push(vec4(locX, locY + height, locZ, 1.0 )); // E (4)
+    dynamicVertices.push(vec4(locX + width,  locY + height, locZ, 1.0 )); // F (5)
+    dynamicVertices.push(vec4(locX, locY, locZ, 1.0 )); // G (6)
+    dynamicVertices.push(vec4(locX + width, locY, locZ, 1.0 ));  // H (7)
 
-    quad(index + 2,index,index + 1,index + 3,colorIndex);
-    quad(index + 3,index + 1,index + 5,index + 7,colorIndex + 1);
-    quad(index + 7,index + 5,index + 4,index + 6,colorIndex);
-    quad(index + 6,index + 4,index,index + 2,colorIndex + 1);
-    quad(index,index + 4,index + 5,index + 1,colorIndex + 1);
-    quad(index + 2,index + 6,index + 7,index + 3,colorIndex + 1);
+    quadDynamic(index + 2,index,index + 1,index + 3,colorIndex);
+    quadDynamic(index + 3,index + 1,index + 5,index + 7,colorIndex + 1);
+    quadDynamic(index + 7,index + 5,index + 4,index + 6,colorIndex);
+    quadDynamic(index + 6,index + 4,index,index + 2,colorIndex + 1);
+    quadDynamic(index,index + 4,index + 5,index + 1,colorIndex + 1);
+    quadDynamic(index + 2,index + 6,index + 7,index + 3,colorIndex + 1);
 }
 
 function Newell(Vertices, indices)
@@ -318,103 +329,168 @@ function cylinder(points, height, radius, locX, locY, locZ,colorIndex){
     var bottomIndices = [];
     var bottomCenterIndex = vertices.length;
 
-    vertices.push(center);
-    var index = vertices.length;
+    dynamicVertices.push(center);
+    var index = dynamicVertices.length;
 
     // bottom circle vertices
 	for  (var i=0; i<SIZE+1; i++) {
         var newBottomVertex = vec4(center[0]+radius*Math.cos(i*angle), locY, center[2]+radius*Math.sin(i*angle), 1.0);
-	    vertices.push(newBottomVertex);
+	    dynamicVertices.push(newBottomVertex);
         bottomIndices.push(index + i);
 	}
 
     center = vec4(locX, locY + height, locZ, 1.0);
-    var topCenterIndex = vertices.length;
+    var topCenterIndex = dynamicVertices.length;
 
-    vertices.push(center);
-    index = vertices.length;
+    dynamicVertices.push(center);
+    index = dynamicVertices.length;
 
     // top circle vertices
 	for  (var i=0; i<SIZE+1; i++) {
         var newTopVertex = vec4(center[0]+radius*Math.cos(i*angle), locY + height, center[2]+radius*Math.sin(i*angle), 1.0);
-	    vertices.push(newTopVertex);
+	    dynamicVertices.push(newTopVertex);
         topIndices.push(index + i);
 	}
 
     // Make bottom circle
     for(var i=0; i<bottomIndices.length - 1; i++){
-        tri(bottomCenterIndex, bottomIndices[i], bottomIndices[i + 1], colorIndex + 1);
+        triDynamic(bottomCenterIndex, bottomIndices[i], bottomIndices[i + 1], colorIndex + 1);
     }
     // Make top circle
     for(var i=0; i<topIndices.length - 1; i++){
-        tri(topCenterIndex, topIndices[i], topIndices[i + 1], colorIndex + 1);
+        triDynamic(topCenterIndex, topIndices[i], topIndices[i + 1], colorIndex + 1);
     }
     //Make walls
     for(var i=0; i<topIndices.length - 1;i++){
         if(i % 2 == 0){
-            quad(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex + 1);
+            quadDynamic(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex + 1);
         }
         else{
-            quad(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex);
+            quadDynamic(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex);
         }
     }
 }
 
 function MakeStreetLamp() {
+    StreetLampHeadIndex = pointsArray.length;
+
     //Top
-    tri(0,8,4,1);//AIE
-    quad(4,8,9,5,0);//EIJF
-    tri(5,9,1,1);//FJB
-    quad(1,9,11,3,0);//BJLD
-    tri(3,11,7,1);//DLH
-    quad(10,6,7,11,0);//KGHL
-    tri(2,6,10,1);//CGK
-    quad(2,10,8,0,0);//CKIA
-    quad(8,10,11,9,1);//IKLJ
-
-    //Middle
-    quad(0,24,28,4,0);//AA'E'E
-    quad(4,28,29,5,1);//EE'F'F
-    quad(5,29,25,1,0);//FF'B'B
-    quad(1,25,27,3,1);//BB'D'D
-    quad(3,27,31,7,0);//DD'H'H
-    quad(7,31,30,6,1);//HH'G'G
-    quad(6,30,26,2,0);//GG'C'C
-    quad(2,26,24,0,1);//CC'A'A
-
-    
-    quad(12,32,36,16,0);//MM'Q'Q
-    quad(16,36,37,17,1);//QQ'R'R
-    quad(17,37,33,13,0);//RR'N'N
-    quad(13,33,35,15,1);//NN'P'P 
-    quad(15,35,39,19,0);//PP'T'T
-    quad(19,39,38,18,1);//TT'S'S
-    quad(18,38,34,14,0);//SS'O'O
-    quad(14,34,32,12,1);//OO'M'M
-    
-    quad(24,32,36,28,1);//A'M'Q'E'
-    quad(28,36,37,29,2);//E'Q'R'F'
-    quad(29,37,33,25,1);//F'R'N'B'
-    quad(25,33,35,27,2);//B'N'P'D'
-    quad(27,35,39,31,1);//D'P'T'H'
-    quad(31,39,38,30,2);//H'T'S'G'
-    quad(30,38,34,26,1);//G'S'O'C'
-    quad(26,34,32,24,2);//C'O'M'A'
+    triDynamic(0,8,4,1);//AIE
+    quadDynamic(4,8,9,5,0);//EIJF
+    triDynamic(5,9,1,1);//FJB
+    quadDynamic(1,9,11,3,0);//BJLD
+    triDynamic(3,11,7,1);//DLH
+    quadDynamic(10,6,7,11,0);//KGHL
+    triDynamic(2,6,10,1);//CGK
+    quadDynamic(2,10,8,0,0);//CKIA
+    quadDynamic(8,10,11,9,1);//IKLJ
 
     //Bottom
-    tri(12,20,16,1);//MUQ
-    quad(16,20,21,17,0);//QUVR
-    tri(17,21,13,1);//RVN
-    quad(13,21,23,15,0);//NVXP
-    tri(15,23,19,1);//PXT
-    quad(22,18,19,23,0);//WSTX
-    tri(14,18,22,1);//OSW
-    quad(14,22,20,12,0);//OWUM
-    quad(20,22,23,21,1);//UWXV
+    triDynamic(12,20,16,1);//MUQ
+    quadDynamic(16,20,21,17,0);//QUVR
+    triDynamic(17,21,13,1);//RVN
+    quadDynamic(13,21,23,15,0);//NVXP
+    triDynamic(15,23,19,1);//PXT
+    quadDynamic(22,18,19,23,0);//WSTX
+    triDynamic(14,18,22,1);//OSW
+    quadDynamic(14,22,20,12,0);//OWUM
+    quadDynamic(20,22,23,21,1);//UWXV
 
+    //Middle
+    quadDynamic(12,32,36,16,0);//MM'Q'Q
+    quadDynamic(16,36,37,17,1);//QQ'R'R
+    quadDynamic(17,37,33,13,0);//RR'N'N
+    quadDynamic(13,33,35,15,1);//NN'P'P 
+    quadDynamic(15,35,39,19,0);//PP'T'T
+    quadDynamic(19,39,38,18,1);//TT'S'S
+    quadDynamic(18,38,34,14,0);//SS'O'O
+    quadDynamic(14,34,32,12,1);//OO'M'M
+
+    quadDynamic(0,24,28,4,0);//AA'E'E
+    quadDynamic(4,28,29,5,1);//EE'F'F
+    quadDynamic(5,29,25,1,0);//FF'B'B
+    quadDynamic(1,25,27,3,1);//BB'D'D
+    quadDynamic(3,27,31,7,0);//DD'H'H
+    quadDynamic(7,31,30,6,1);//HH'G'G
+    quadDynamic(6,30,26,2,0);//GG'C'C
+    quadDynamic(2,26,24,0,1);//CC'A'A
+
+    quadDynamic(24,32,36,28,1);//A'M'Q'E' //
+    quadDynamic(29,37,33,25,1);//F'R'N'B' //
+    quadDynamic(27,35,39,31,1);//D'P'T'H' //
+    quadDynamic(30,38,34,26,1);//G'S'O'C' //
+
+    StreetLampHeadAmount = pointsArray.length - StreetLampHeadIndex;
+    StreetLightIndex = pointsArray.length;
+
+    //Middle
+    
+    
+    
+    quadDynamic(28,36,37,29,2);//E'Q'R'F'
+    
+    quadDynamic(25,33,35,27,2);//B'N'P'D'
+    
+    quadDynamic(31,39,38,30,2);//H'T'S'G'
+    
+    quadDynamic(26,34,32,24,2);//C'O'M'A'
+
+    StreetLightAmount = pointsArray.length - StreetLightIndex;
+
+    
+}
+
+function DrawStreetLamp(){
+
+    let black = vec4(0.3,0.3,0.3,1);
+    
+    // Draw Base
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+    flatten(mult(lightDiffuse, black)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+    flatten(mult(lightAmbient, black)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, StreetLampHeadIndex, StreetLampHeadAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+
+function DrawStreetLight(){
+    let yellow = vec4(1.0,1.0,0,1);
+    
+    // Draw Base
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+    flatten(mult(lightDiffuse, yellow)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+    flatten(mult(lightAmbient, yellow)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, StreetLightIndex, StreetLightAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
 }
 
 function MakeBuilding(xLoc,yLoc,zLoc){
+
+    ApartmentIndex = pointsArray.length;
+
     // Pillars
     cube(1,3,1,xLoc,yLoc,zLoc,3);
     cube(1,3,1,xLoc + 3,yLoc,zLoc,3);
@@ -431,13 +507,6 @@ function MakeBuilding(xLoc,yLoc,zLoc){
     cube(15,3,6,xLoc - 1,yLoc + 9,zLoc - 4,3);
     // Hind part of building
     cube(24,12,6,xLoc - 1,yLoc,zLoc - 10,3);
-    //Railing (2nd floor)
-    cube(14.5,1,.5,xLoc - 0.5,yLoc+6,zLoc,5);
-    cube(.5,1,5,xLoc - 0.5,yLoc+6,zLoc-5,5);
-
-    // Middle part of building
-    cylinder(8,15,10,xLoc + 20,yLoc,zLoc -5,3);
-    cylinder(8,1,10.5,xLoc + 20,yLoc+6,zLoc -5,5);
 
     // Pillars
     cube(1,3,1,xLoc + 30,yLoc,zLoc,3);
@@ -453,11 +522,28 @@ function MakeBuilding(xLoc,yLoc,zLoc){
     cube(1,3,1,xLoc + 39,yLoc + 6,zLoc,3);
     // Top part of building (2nd floor)
     cube(15,3,6,xLoc + 26,yLoc + 9,zLoc - 4,3);
+    cube(20,4,3,xLoc + 10.23,yLoc+6,zLoc-3.6,3);
     // Hind part of building
     cube(24,12,6,xLoc + 17,yLoc,zLoc - 10,3);
+
+    // Front door section
+    cube(6,6,5.9,xLoc + 17,yLoc,zLoc+3,3);
+
+    ApartmentAmount = pointsArray.length - ApartmentIndex;
+
+    ApartmentRailIndex = pointsArray.length;
+
     // Railing (2nd floor)
     cube(14.5,1,.5,xLoc + 26,yLoc+6,zLoc,5);
     cube(.5,1,5,xLoc + 40,yLoc+6,zLoc-5,5);
+
+    // Railing (2nd floor)
+    cube(14.5,1,.5,xLoc - 0.5,yLoc+6,zLoc,5);
+    cube(.5,1,5,xLoc - 0.5,yLoc+6,zLoc-5,5);
+
+    ApartmentRailAmount = pointsArray.length - ApartmentRailIndex;
+
+    ApartmentDoorIndex = pointsArray.length;
 
     // Doors
     cube(1.5,2.5,0.1,xLoc + 7.25,yLoc + 6,zLoc-4,9);
@@ -470,17 +556,22 @@ function MakeBuilding(xLoc,yLoc,zLoc){
     cube(1.5,2.5,0.1,xLoc + 37.25,yLoc,zLoc-4,9);
     cube(1.5,2.5,0.1,xLoc + 31.25,yLoc,zLoc-4,9);
 
-    cube(20,4,3,xLoc + 10.23,yLoc+6,zLoc-3.6,3);
     cube(20.2,2.5,1.5,xLoc + 10.22,yLoc+6,zLoc-2.7,9);
 
     // Entrance door
     cube(3,2.5,0.1,xLoc + 18.5,yLoc,zLoc+8.9,9);
-    cube(6,6,5.9,xLoc + 17,yLoc,zLoc+3,3);
-    cube(7.2,1,5.9,xLoc + 16.5,yLoc+6,zLoc+3.5,5);
+    
+    
+
+    ApartmentDoorAmount = pointsArray.length - ApartmentDoorIndex;
+
+    ApartmentRoofIndex = pointsArray.length;
 
     // Roof
-    cylinder(8,1,10.5,xLoc + 20,yLoc+15,zLoc -5,5);
     cube(43,1,13,xLoc-1.5,yLoc+12,zLoc-10.5,5);
+    cube(7.2,1,5.9,xLoc + 16.5,yLoc+6,zLoc+3.5,5);
+
+    ApartmentRoofAmount = pointsArray.length - ApartmentRoofIndex;
 
 }
 
@@ -896,6 +987,7 @@ function DrawFountain() {
          flatten(ambientProduct) );
 }
 
+<<<<<<< Updated upstream
 function DrawSnowFlake() {
     let white = vec4(1,1,1,1);
     
@@ -942,6 +1034,140 @@ function DrawSnowFlake() {
 
     gl.uniform4fv(ambientProductLoc,
     flatten(ambientProduct) );
+=======
+function DrawStreetLampPole() {
+    let gray = vec4(0.2, 0.2, 0.2, 1.0)
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, StreetLampPoleIndex, StreetLampPoleAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+
+function DrawBuilding(xLoc, yLoc, zLoc){
+
+    let gray = vec4(0.2, 0.2, 0.2, 1.0)
+    let white = vec4(1.0, 1.0, 1.0, 1.0)
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, ApartmentIndex, ApartmentAmount );
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(xLoc + 20,yLoc,zLoc -5));
+    modelViewMatrix = mult(modelViewMatrix, scale4(10, 15, 10));
+    DrawCylinder(8,5);//(8,1,10.5,xLoc + 20,yLoc+15,zLoc -5,5);
+    modelViewMatrix = MatrixStack.pop();
+
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(xLoc + 20,yLoc+15,zLoc -5));
+    modelViewMatrix = mult(modelViewMatrix, scale4(10.5, 1, 10.5));
+    DrawCylinder(8,5);//(8,1,10.5,xLoc + 20,yLoc+15,zLoc -5,5);
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(xLoc + 20,yLoc+6,zLoc -5));
+    modelViewMatrix = mult(modelViewMatrix, scale4(10.5, 1, 10.5));
+    DrawCylinder(8,5);//(8,1,10.5,xLoc + 20,yLoc+15,zLoc -5,5);
+    modelViewMatrix = MatrixStack.pop();
+
+    //DynamicCylinder(8,5);//(8,15,10,xLoc + 20,yLoc,zLoc -5,3);
+    //DynamicCylinder(8,5);//(8,1,10.5,xLoc + 20,yLoc+6,zLoc -5,5);
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+
+function DrawApartmentRails(){
+
+    let gray = vec4(1.0, 1.0, 1.0, 1.0)
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, ApartmentRailIndex, ApartmentRailAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+function DrawApartmentRoof(){
+    let gray = vec4(1.0, 1.0, 1.0, 1.0)
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, ApartmentRoofIndex, ApartmentRoofAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+
+function DrawApartmentDoors(){
+    let gray = vec4(0.8, 0.8, 0.8, 1.0)
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, ApartmentDoorIndex, ApartmentDoorAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+>>>>>>> Stashed changes
 }
 
 // Fountain initial 2d line points for surface of revolution  (25 points)
@@ -964,6 +1190,19 @@ var fountainPoints = [
 
 
 ];
+
+var streetLampPoints = [
+    [0.0,1.1,0.0],
+    [0.1,1.1,0.0],
+    [0.2,1.0,0.0],
+    [0.1,-0.3,0.0],
+    [0.1,0.9,0.0],
+    [0.2,-0.4,0.0],
+    [0.3,-0.4,0.0],
+    [0.3,-0.5,0.0],
+    [0.0,-0.5,0.0]
+
+]
 
 //Sets up the vertices array so the Fountain can be drawn
 function SurfaceRevPoints(points)
@@ -1017,6 +1256,14 @@ function MakeFountain() {
     FountainAmount = pointsArray.length - FountainIndex;
 }
 
+function MakeStreetLampPole() {
+    StreetLampPoleIndex = pointsArray.length;
+
+    SurfaceRevPoints(streetLampPoints);
+
+    StreetLampPoleAmount = pointsArray.length - StreetLampPoleIndex;
+}
+
 function scale4(a, b, c) {
     var result = mat4();
     result[0][0] = a;
@@ -1066,6 +1313,7 @@ window.onload = function init() {
     gl.useProgram( program );
 
     MakeStreetLamp();  // created the color cube - point positions and face colors
+    MakeStreetLampPole();
 
     MakeBuilding(1.5,-0.8,-0.5);
     MakeTrashCan(4, .5, 3);
@@ -1374,6 +1622,7 @@ var render = function() {
     modelViewMatrix = mult(modelViewMatrix, translate(-20, 0, 10));
     modelViewMatrix = mult(modelViewMatrix, scale4(8, 8, 8));
     DrawFountain();
+<<<<<<< Updated upstream
     modelViewMatrix = MatrixStack.pop();
 
     for (let i = 0; i < snowflakes.length; i++) {
@@ -1403,4 +1652,28 @@ var render = function() {
     }
 
     requestAnimFrame(render);
+=======
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(4, 1.05, 2));
+    modelViewMatrix = mult(modelViewMatrix, scale4(.2, .2, .2));
+    
+    DrawStreetLamp();
+    DrawStreetLight();
+
+    modelViewMatrix = mult(modelViewMatrix, translate(0, -4, 0));
+    modelViewMatrix = mult(modelViewMatrix, scale4(2, 3, 2));
+    DrawStreetLampPole();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(.5, 0.1, -1.8));
+    modelViewMatrix = mult(modelViewMatrix, scale4(0.2, 0.2, 0.2));
+    DrawBuilding(1.5,-0.8,-0.5);
+    DrawApartmentRails();
+    DrawApartmentRoof();
+    DrawApartmentDoors();
+    modelViewMatrix = MatrixStack.pop();
+
+>>>>>>> Stashed changes
 }
