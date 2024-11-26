@@ -56,7 +56,8 @@ var diffuseProductLoc, ambientProductLoc;
 
 var ConeIndex, ConeAmount;
 var CylinderIndex, CylinderAmount;
-var CylinderIndex2, CylinderAmount2; // TODO : Remove and Materials
+var TrashCanLidIndex, TrashCanStripIndex;
+var TrashCanLidAmount, TrashCanStripAmount;
 
 var dynamicVertices = [];
 var vertices = [
@@ -482,12 +483,19 @@ function MakeBuilding(xLoc,yLoc,zLoc){
 
 }
 
-function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
+function MakeTrashCan(strip_height, strip_width, can_radius) {
     // Remember where our trash can begins
     let trash_can_index = vertices.length;
     let radius = can_radius;
     let precision = 12;
 
+    let x = 0;
+    let y = 0;
+    let z = 0;
+
+    
+    TrashCanStripIndex = pointsArray.length;
+    TrashCanStripAmount = pointsArray.length;
     // Draw Trash can strip
     let corners = [
                     vec3(radius, strip_height, strip_width), //upper_corner1
@@ -505,7 +513,7 @@ function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
     for (let i = 0; i < precision; i++) {
         let angle = tau / precision * i;
         // Remember where our strip begins
-        let strip_index = vertices.length;
+        let strip_index = dynamicVertices.length;
         
         let new_corners = []
         // Find rotated strip
@@ -541,7 +549,7 @@ function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
             let dy = new_corners[j][1];
             let dz = new_corners[j][2];
             // Record in vertices array
-            vertices.push(vec4(
+            dynamicVertices.push(vec4(
                 dx + x,
                 dy + y,
                 dz + z,
@@ -549,12 +557,18 @@ function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
             ));
         }
         // Create current strip
-        quad(strip_index, strip_index + 1, strip_index + 2, strip_index + 3, 8 + i % 2)
+        quadDynamic(strip_index, strip_index + 1, strip_index + 2, strip_index + 3, 8 + i % 2)
     }
+
+    // Calculate how many new vertices were created
+    TrashCanStripAmount = pointsArray.length - TrashCanStripAmount;
 
 
     // Create bottom base
-    cylinder(precision, 0.2, radius, x, y, z, 8)
+    // cylinder(precision, 0.2, radius, x, y, z, 8)
+
+    TrashCanLidIndex = pointsArray.length;
+    TrashCanLidAmount = pointsArray.length;
 
     // Create top lid
     // Represent mesh as a flat grid, then raise each point
@@ -570,7 +584,7 @@ function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
         return 1 - dist / max_dist;
     };
     // Remember where our lid begins
-    let lid_index = vertices.length;
+    let lid_index = dynamicVertices.length;
     for (let i = 0; i < count; i++) {
         lid_grid[i] = [];
         for (let j = 0; j < count; j++) {
@@ -589,7 +603,7 @@ function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
             )
             lid_grid[i][j] = lid_index;
             lid_index++;
-            vertices.push(point);
+            dynamicVertices.push(point);
         }
     }
     
@@ -597,13 +611,16 @@ function MakeTrashCan(x, y, z, strip_height, strip_width, can_radius) {
 
     for (let i = 0; i < lid_grid.length - 1; i++) {
         for (let j = 0; j < lid_grid[i].length - 1; j++) {
-            quad(lid_grid[i][j], lid_grid[i + 1][j],
+            quadDynamic(lid_grid[i][j], lid_grid[i + 1][j],
                 lid_grid[i + 1][j + 1], lid_grid[i][j + 1],
                 // Calculate which color to make checker pattern
                  8 + ( (i % 2) + (j % 2)) % 2
             )
         }
     }
+
+    // Calculate how many new vertices were created
+    TrashCanLidAmount = pointsArray.length - TrashCanLidAmount;
 
 }
 // Dimensions will be 1x1x1 and will rely on transformations
@@ -743,6 +760,56 @@ function DrawCone() {
     gl.drawArrays( gl.TRIANGLES, ConeIndex, ConeAmount );
 }
 
+function DrawTrashCanLid() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, TrashCanLidIndex, TrashCanLidAmount );
+}
+
+function DrawTrashCanStrips() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, TrashCanStripIndex, TrashCanStripAmount );
+}
+
+function DrawTrashCan() {
+    let red = rgb(245, 20, 0, 255);
+    let black = rgb(0, 0, 0, 255);
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, red)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, red)));
+
+
+    // Draw Lid and Strips
+    MatrixStack.push(modelViewMatrix);
+    DrawTrashCanLid()
+    DrawTrashCanStrips()
+    modelViewMatrix = MatrixStack.pop();
+
+    // Draw Base
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, black)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, black)));
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, scale4(3, 0.2, 3));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(ambientProduct) );
+}
+
 function DrawTrafficCone() {
 
     let black = vec4(0.3,0.3,0.3,1);
@@ -856,8 +923,7 @@ window.onload = function init() {
     MakeStreetLamp();  // created the color cube - point positions and face colors
 
     MakeBuilding(1.5,-0.8,-0.5);
-    MakeTrashCan(-8, 0, 5, 4, .5, 3);
-    // MakeTrashCan(5, 0, 0 , 4, .5, 3);
+    MakeTrashCan(4, .5, 3);
 
     // DYNAMIC CALLS DOWN HERE ONLY
 
@@ -1086,6 +1152,11 @@ var render = function() {
 
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
+    MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, mult(translate(0,0,15), scale4(2, 2, 2)));
     DrawTrafficCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    modelViewMatrix = mult(modelViewMatrix, translate(-8, 0, 5));
+    DrawTrashCan();
 }
