@@ -733,79 +733,9 @@ function DynamicCylinder(points, colorIndex) {
     }
 }
 
-// We need to remove this and implement materials so we can change the colors of these objects
-function DynamicCylinderGray(points, colorIndex) {
-    let height = 1;
-    let radius = 1;
-    let locX = 0;
-    let locY = 0;
-    let locZ = 0;
-    // Circle variables
-    
-	var SIZE = points; // circle slices
-	var angle = 2*Math.PI/SIZE;
-    var center = vec4(locX,locY,locZ,1.0);
-    var topIndices = [];
-    var bottomIndices = [];
-    var bottomCenterIndex = dynamicVertices.length;
-
-    CylinderIndex2 = pointsArray.length;
-    CylinderAmount2 = 0;
-
-    dynamicVertices.push(center);
-    var index = dynamicVertices.length;
-
-    // bottom circle vertices
-	for  (var i=0; i<SIZE+1; i++) {
-        var newBottomVertex = vec4(center[0]+radius*Math.cos(i*angle), locY, center[2]+radius*Math.sin(i*angle), 1.0);
-	    dynamicVertices.push(newBottomVertex);
-        bottomIndices.push(index + i);
-	}
-
-    center = vec4(locX, locY + height, locZ, 1.0);
-    var topCenterIndex = dynamicVertices.length;
-
-    dynamicVertices.push(center);
-    index = dynamicVertices.length;
-
-    // top circle vertices
-	for  (var i=0; i<SIZE+1; i++) {
-        var newTopVertex = vec4(center[0]+radius*Math.cos(i*angle), locY + height, center[2]+radius*Math.sin(i*angle), 1.0);
-	    dynamicVertices.push(newTopVertex);
-        topIndices.push(index + i);
-	}
-
-    
-
-    // Make bottom circle
-    for(var i=0; i<bottomIndices.length - 1; i++){
-        let info = triDynamic(bottomCenterIndex, bottomIndices[i], bottomIndices[i + 1], colorIndex + 1);
-        let index = info[0];
-        let amount_added = info[1];
-        CylinderAmount2 += amount_added;
-    }
-    // Make top circle
-    for(var i=0; i<topIndices.length - 1; i++){
-        let info = triDynamic(topCenterIndex, topIndices[i], topIndices[i + 1], colorIndex + 1);
-        let amount_added = info[1];
-        CylinderAmount2 += amount_added;
-    }
-    //Make walls
-    for(var i=0; i<topIndices.length - 1;i++){
-        let info = quadDynamic(bottomIndices[i], topIndices[i], topIndices[i+1],bottomIndices[i+1],colorIndex + i % 2);
-        let amount_added = info[1];
-        CylinderAmount2 += amount_added;
-    }
-}
-
 function DrawCylinder() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, CylinderIndex, CylinderAmount );
-}
-
-function DrawCylinder2() {
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
-    gl.drawArrays( gl.TRIANGLES, CylinderIndex2, CylinderAmount2 );
 }
 
 function DrawCone() {
@@ -830,7 +760,7 @@ function DrawTrafficCone() {
 
     MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, mult(translate(0,-0.1,0), scale4(2, 0.1, 2)));
-    DrawCylinder2();
+    DrawCylinder();
     modelViewMatrix = MatrixStack.pop();
 
     // Draw Cone
@@ -932,7 +862,6 @@ window.onload = function init() {
     // DYNAMIC CALLS DOWN HERE ONLY
 
     DynamicCylinder(8, 10);
-    DynamicCylinderGray(8, 3);
     DynamicCone();
 
     var vBuffer = gl.createBuffer();
