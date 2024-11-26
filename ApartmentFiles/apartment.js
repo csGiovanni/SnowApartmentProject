@@ -80,6 +80,8 @@ var CylinderIndex, CylinderAmount;
 var TrashCanLidIndex, TrashCanStripIndex;
 var TrashCanLidAmount, TrashCanStripAmount;
 var FountainIndex, FountainAmount;
+var HalfCircleIndex, HalfCircleAmount;
+var PillarIndex, PillarAmount;
 
 var dynamicVertices = [
     //Streetlight Top and Building Structure (Timmy Do)
@@ -291,6 +293,115 @@ function quadDynamic(a, b, c, d, colorIndex) {
 
     return [index, /* Number of points created */ 6]
 }
+
+function HalfExtrudedPolygon(points) {
+    var height=2;
+    var radius=1.5;
+    var num=points;
+    var alpha=Math.PI/num;
+
+    let HPolygonIndex = dynamicVertices.length;
+
+    dynamicVertices.push(vec4(0, 0, 0, 1));
+    //for (var i=2*num; i>=0; i--)   // this is extruded whole circle
+    for (var i=num; i>=0; i--)     // this is extruded half circle
+    {
+        dynamicVertices.push(vec4(radius*Math.cos(i*alpha), 0, radius*Math.sin(i*alpha), 1));
+    }
+
+    let amount = dynamicVertices.length - HPolygonIndex;
+
+    ExtrudedShape(HPolygonIndex, amount);
+}
+
+function ExtrudedPolygon(points) {
+    var radius=1;
+    var num=points;
+    var alpha=Math.PI/num;
+
+    let HPolygonIndex = dynamicVertices.length;
+
+    dynamicVertices.push(vec4(0, 0, 0, 1));
+    for (var i=2*num; i>=0; i--)   // this is extruded whole circle
+    // for (var i=num; i>=0; i--)     // this is extruded half circle
+    {
+        dynamicVertices.push(vec4(radius*Math.cos(i*alpha), 0, radius*Math.sin(i*alpha), 1));
+    }
+
+    let amount = dynamicVertices.length - HPolygonIndex;
+
+    ExtrudedShape(HPolygonIndex, amount);
+}
+
+function ExtrudedShape(index, amount)
+{
+    let height = 1;
+
+    // add the second set of points
+    for (var i=0; i< amount ; i++)
+    {
+        dynamicVertices.push(vec4(dynamicVertices[index + i][0], dynamicVertices[index + i][1]+height, dynamicVertices[index + i][2], 1));
+    }
+    var basePoints=[];
+    var topPoints=[];
+
+    // create the face list
+    // add the side faces first --> N quads
+    for (var j = 0; j < amount; j++)
+    {
+        quadDynamic(index + j, index + j+amount, index + (j+1)%amount+amount, index + (j+1)%amount); // CCW rotation
+    }
+
+    // the first N vertices come from the base
+    basePoints.push(index);
+    for (var i=0; i< amount; i++)
+    {
+        basePoints.push(index + i);  // index only
+    }
+    // add the base face as the Nth face
+    polygon(index, basePoints);
+
+    // the next N vertices come from the top
+    for (var i=0; i < amount; i++)
+    {
+        topPoints.push(index + i + amount); // index only
+    }
+    // add the top face
+    polygon(index, topPoints);
+}
+
+function polygon(index, indices)
+{
+    // for indices=[a, b, c, d, e, f, ...]
+    var M=indices.length;
+    var normal=Newell(dynamicVertices, indices);
+
+    var prev = 1;
+    var next = 2;
+    // triangles:
+    // a-b-c
+    // a-c-d
+    // a-d-e
+    // ...
+    for (var i=0; i<M-2; i++)
+    {
+        pointsArray.push(dynamicVertices[indices[0]]);
+        normalsArray.push(normal);
+        texCoordsArray.push(texCoord[0]);
+
+        pointsArray.push(dynamicVertices[indices[prev]]);
+        normalsArray.push(normal);
+        texCoordsArray.push(texCoord[1]);
+
+        pointsArray.push(dynamicVertices[indices[next]]);
+        normalsArray.push(normal);
+        texCoordsArray.push(texCoord[2]);
+
+        prev=next;
+        next=next+1;
+    }
+}
+
 function cube(width, height, thickness, locX, locY, locZ, colorIndex){
     var index = dynamicVertices.length;
     dynamicVertices.push(vec4(locX,  locY + height,  locZ + thickness, 1.0 ));  // A (0)
@@ -595,6 +706,19 @@ function MakeBuilding(xLoc,yLoc,zLoc){
 
     ApartmentRoofAmount = pointsArray.length - ApartmentRoofIndex;
 
+}
+
+function HalfCircle()
+{
+    HalfCircleIndex = pointsArray.length;
+    HalfExtrudedPolygon(12);
+    HalfCircleAmount = pointsArray.length - HalfCircleIndex;
+}
+
+function OctogonalExtrusion() {
+    PillarIndex = pointsArray.length;
+    ExtrudedPolygon(4);
+    PillarAmount = pointsArray.length - PillarIndex;
 }
 
 function MakeTrashCan(strip_height, strip_width, can_radius) {
@@ -1215,6 +1339,60 @@ function DrawApartmentDoors(){
          flatten(ambientProduct) );
 }
 
+function DrawHalfCircle() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, HalfCircleIndex, HalfCircleAmount );
+}
+
+function DrawPillarExtrusion() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, PillarIndex, PillarAmount );
+}
+
+function DrawArchway() {
+    let width = 1.0;
+    let height = 9.0;
+
+    let green = vec4(0.2,0.4,0.2,1);
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, green)));
+ 
+     gl.uniform4fv(ambientProductLoc,
+     flatten(mult(lightAmbient, green)));
+
+    MatrixStack.push(modelViewMatrix);
+    // Draw Pillars
+    let transform = scale4(width, height, width);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-6, 0, 0), transform));
+    DrawPillarExtrusion();
+    modelViewMatrix = MatrixStack.pop();
+
+
+    MatrixStack.push(modelViewMatrix);
+    transform = scale4(width, height, width);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(6, 0, 0), transform));
+    DrawPillarExtrusion();
+    modelViewMatrix = MatrixStack.pop();
+
+
+    // Draw Archway
+    MatrixStack.push(modelViewMatrix);
+    height = 2;
+    width =7
+    transform = mult(scale4(width, height, width), rotate(-90, [1,0,0]));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0, 9, 2.5), transform));
+    DrawHalfCircle();
+    modelViewMatrix = MatrixStack.pop();
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+    flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+    flatten(ambientProduct) );
+}
+
 // Fountain initial 2d line points for surface of revolution  (25 points)
 var fountainPoints = [
 	[1.0, 0.0, 0.0],
@@ -1383,6 +1561,8 @@ window.onload = function init() {
     DynamicCylinder(8, 10);
     DynamicCone();
     MakeFountain();
+    HalfCircle();
+    OctogonalExtrusion();
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
@@ -1746,9 +1926,11 @@ var render = function() {
     DrawStreetLampPole();
     modelViewMatrix = MatrixStack.pop();
 
-    requestAnimFrame(render);
-
+    MatrixStack.push(modelViewMatrix);
     
+    modelViewMatrix = mult(modelViewMatrix, translate(30, 0, 20));
+    DrawArchway();
+    modelViewMatrix = MatrixStack.pop();
 
     MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, translate(.5, 1.15, -1.8));
@@ -1760,4 +1942,6 @@ var render = function() {
     modelViewMatrix = MatrixStack.pop();
 
     DrawRoad();
+
+    requestAnimFrame(render);
 }
