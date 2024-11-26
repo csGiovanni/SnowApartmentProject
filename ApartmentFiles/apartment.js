@@ -1,5 +1,5 @@
 /**
- * Project 4 Part 1
+ * Project 4 Part 2
  * Giovanni Del Valle, Timmy Do
  * 
  * Objects:
@@ -15,6 +15,31 @@ var canvas, gl;
 var numVertices  = 0;
 var pointsArray = [];
 var colorsArray = [];
+var normalsArray = [];
+var texCoordsArray = [];
+
+var lightPosition = vec4(2, 3, 2, 0.0 );
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+
+var materialAmbient = vec4( 0.0, 0.0, 1.0, 1.0 );
+var materialDiffuse = vec4( 0.0, 0.0, 1.0, 1.0);
+var materialSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
+var materialShininess = 50.0;
+
+var ctm;
+var ambientColor, diffuseColor, specularColor;
+
+// texture coordinates
+var texCoord = [
+    vec2(0, .5),
+    vec2(0, 0),
+    vec2(.5, .5),
+    vec2(.5, 0),
+];
+
+var texture;
 
 // Variables that control the orthographic projection bounds.
 var y_max = 5;
@@ -27,6 +52,7 @@ var far = 50;
 var MatrixStack = [];
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
+var diffuseProductLoc, ambientProductLoc;
 
 var ConeIndex, ConeAmount;
 var CylinderIndex, CylinderAmount;
@@ -116,28 +142,64 @@ var vertexColors = [
 
 // quad uses first index to set color for face
 function quad(a, b, c, d, colorIndex) {
+
+    var indices=[a, b, c, d];
+    var normal = Newell(vertices, indices);
+
+    // triangle a-b-c
      pointsArray.push(vertices[a]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[0]);
+
      pointsArray.push(vertices[b]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[1]);
+
      pointsArray.push(vertices[c]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[2]);
+
+     // triangle a-c-d
      pointsArray.push(vertices[a]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[0]);
+
      pointsArray.push(vertices[c]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[2]);
+
      pointsArray.push(vertices[d]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[3]);
      numVertices = numVertices + 6;
 }
 
 function tri(a,b,c,colorIndex){
+    var indices=[a, b, c];
+    var normal = Newell(vertices, indices);
+
+    // triangle a-b-c
      pointsArray.push(vertices[a]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[0]);
+
      pointsArray.push(vertices[b]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[1]);
+
      pointsArray.push(vertices[c]);
      colorsArray.push(vertexColors[colorIndex]);
+     normalsArray.push(normal);
+     texCoordsArray.push(texCoord[2]);
+
      numVertices = numVertices + 3;
 }
 // Everything made by tri() and quad() are all drawn at once. These dynamic functions will allow us to draw only some shapes (and repeated)
@@ -146,29 +208,62 @@ function tri(a,b,c,colorIndex){
 // It is up to the user of these functions to record the index and number of vertices created
 function triDynamic(a, b, c, colorIndex) {
     let index = pointsArray.length;
+    var indices=[a, b, c];
+    var normal = Newell(dynamicVertices, indices);
+    // triangle a-b-c
     pointsArray.push(dynamicVertices[a]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[0]);
+
     pointsArray.push(dynamicVertices[b]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[1]);
+
     pointsArray.push(dynamicVertices[c]);
     colorsArray.push(vertexColors[colorIndex]);
-    console.log(dynamicVertices[a][0])
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[2]);
+
     return [index, /* Number of points created */ 3]
 }
 function quadDynamic(a, b, c, d, colorIndex) {
     let index = pointsArray.length;
+    var indices=[a, b, c, d];
+    var normal = Newell(dynamicVertices, indices);
+    // triangle a-b-c
     pointsArray.push(dynamicVertices[a]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[0]);
+
     pointsArray.push(dynamicVertices[b]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[1]);
+
     pointsArray.push(dynamicVertices[c]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[2]);
+
+    // triangle a-c-d
     pointsArray.push(dynamicVertices[a]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[0]);
+
     pointsArray.push(dynamicVertices[c]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[2]);
+
     pointsArray.push(dynamicVertices[d]);
     colorsArray.push(vertexColors[colorIndex]);
+    normalsArray.push(normal);
+    texCoordsArray.push(texCoord[3]);
+
     return [index, /* Number of points created */ 6]
 }
 function cube(width, height, thickness, locX, locY, locZ, colorIndex){
@@ -188,6 +283,28 @@ function cube(width, height, thickness, locX, locY, locZ, colorIndex){
     quad(index + 6,index + 4,index,index + 2,colorIndex + 1);
     quad(index,index + 4,index + 5,index + 1,colorIndex + 1);
     quad(index + 2,index + 6,index + 7,index + 3,colorIndex + 1);
+}
+
+function Newell(Vertices, indices)
+{
+   var L=indices.length;
+   var x=0, y=0, z=0;
+   var index, nextIndex;
+
+   for (var i=0; i<L; i++)
+   {
+       index=indices[i];
+       nextIndex = indices[(i+1)%L];
+
+       x += (Vertices[index][1] - Vertices[nextIndex][1])*
+            (Vertices[index][2] + Vertices[nextIndex][2]);
+       y += (Vertices[index][2] - Vertices[nextIndex][2])*
+            (Vertices[index][0] + Vertices[nextIndex][0]);
+       z += (Vertices[index][0] - Vertices[nextIndex][0])*
+            (Vertices[index][1] + Vertices[nextIndex][1]);
+   }
+
+   return (normalize(vec3(x, y, z)));
 }
 function cylinder(points, height, radius, locX, locY, locZ,colorIndex){
     // Circle variables
@@ -697,19 +814,47 @@ function DrawCone() {
 }
 
 function DrawTrafficCone() {
+
+    let black = vec4(0.3,0.3,0.3,1);
+    let white = vec4(1,1,1,1);
+    let orange = rgb(245, 120, 0, 255);
+    
     // Draw Base
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, black)));
+ 
+     gl.uniform4fv(ambientProductLoc,
+     flatten(mult(lightAmbient, black)));
+
     MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, mult(translate(0,-0.1,0), scale4(2, 0.1, 2)));
     DrawCylinder2();
     modelViewMatrix = MatrixStack.pop();
 
     // Draw Cone
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, orange)));
+ 
+     gl.uniform4fv(ambientProductLoc,
+     flatten(mult(lightAmbient, orange)));
+
     MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, scale4(1, 2, 1));
     DrawCone();
     modelViewMatrix = MatrixStack.pop();
 
     // Draw Strips
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+    
+    gl.uniform4fv(ambientProductLoc,
+    flatten(mult(lightAmbient, white)));
 
     MatrixStack.push(modelViewMatrix);
     let transform = mult(translate(0, 0.85, 0), scale4(0.7, 0.2, 0.7));
@@ -722,6 +867,14 @@ function DrawTrafficCone() {
     modelViewMatrix = mult(modelViewMatrix, transform);
     DrawCylinder();
     modelViewMatrix = MatrixStack.pop();
+
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+       flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+    flatten(ambientProduct) );
 }
 
 function scale4(a, b, c) {
@@ -782,14 +935,6 @@ window.onload = function init() {
     DynamicCylinderGray(8, 3);
     DynamicCone();
 
-    var cBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
-
-    var vColor = gl.getAttribLocation( program, "vColor" );
-    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vColor);
-
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
     gl.bufferData( gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW );
@@ -797,6 +942,63 @@ window.onload = function init() {
     var vPosition = gl.getAttribLocation( program, "vPosition" );
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vPosition );
+
+    // set up normal buffer
+    var nBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW );
+
+    var vNormal = gl.getAttribLocation( program, "vNormal" );
+    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vNormal );
+
+    // set up texture buffer
+    var tBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW );
+
+    var vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
+    gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vTexCoord );
+
+    // create the texture object
+    texture = gl.createTexture();
+
+    // create the image object
+    texture.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture.image.onload = function() {  loadTexture(texture);}
+
+    // Tell the broswer to load an image
+    texture.image.src='marble2.jpg';   // test with different marble textures images
+
+    ambientProduct = mult(lightAmbient, materialAmbient);
+    diffuseProduct = mult(lightDiffuse, materialDiffuse);
+    specularProduct = mult(lightSpecular, materialSpecular);
+
+    // var cBuffer = gl.createBuffer();
+    // gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+    // gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
+
+    // var vColor = gl.getAttribLocation( program, "vColor" );
+    // gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+    // gl.enableVertexAttribArray( vColor);
+
+    diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+    ambientProductLoc = gl.getUniformLocation(program, "ambientProduct")
+
+    gl.uniform4fv(ambientProductLoc,
+       flatten(ambientProduct));
+    gl.uniform4fv(diffuseProductLoc,
+       flatten(diffuseProduct) );
+    gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"),
+       flatten(specularProduct) );
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),
+       flatten(lightPosition) );
+    
+    gl.uniform1f(gl.getUniformLocation(program,
+    "shininess"),materialShininess);
 
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
@@ -882,8 +1084,34 @@ window.onload = function init() {
         }
         render();
     });
-
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
     render();
+}
+
+function loadTexture(texture)
+{
+     // Flip the image's y axis
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    // Enable texture unit 0
+    gl.activeTexture(gl.TEXTURE0);
+
+    // bind the texture object to the target
+    gl.bindTexture( gl.TEXTURE_2D, texture );
+
+    // set the texture image
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, texture.image );
+
+    // set the texture parameters
+    //gl.generateMipmap( gl.TEXTURE_2D );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+    // set the texture unit 0 the sampler
+    // gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+    // This has an error for god knows why. I've put this code somewhere else. CTRL+F to find it
 }
 
 var at = vec3(0, 0, 0);
