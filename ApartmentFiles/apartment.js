@@ -5,11 +5,17 @@
  * Objects:
  *  Timmy Do
  *  --------
- *  Building, Street Lamp
+ *  Part 1:
+ *  Building (Composite), Street Lamp(Polygonal Mesh), 
+ *  Part 2:
+ *  Street Lamp Pole (Surface of Revolution), Bench (Extruded Shape), Road (Third object of choice)
  * 
  *  Giovanni Del Valle
  *  -------------------
- *  Trash Can, Traffic Cone, Archway, Snowflakes, and Fountain
+ *  Part 1:
+ *  Trash Can (Polygonal Mesh), Traffic Cone (Composite), 
+ *  Part 2;
+ *  Archway (Extruded Shape), Fountain (Surface of Revolution), Snowflakes (Third object of choice)
  * 
  * Version Control : GitHub
  */
