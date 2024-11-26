@@ -1008,6 +1008,62 @@ function DrawTrashCanStrips() {
     gl.drawArrays( gl.TRIANGLES, TrashCanStripIndex, TrashCanStripAmount );
 }
 
+function DrawBench(){
+
+    let white = rgb(255,255,255,255);
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+
+    //Back
+    MatrixStack.push(modelViewMatrix);
+    let transform = mult(rotate(180,[0,1,0]),scale4(2, .5, .2));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-6, 2, 0), transform));
+    DrawHalfCircle();
+    modelViewMatrix = mult(modelViewMatrix, translate(0, -1, 0));
+    DrawHalfCircle();
+    modelViewMatrix = mult(modelViewMatrix, translate(0, -1, 0));
+    DrawHalfCircle();
+    modelViewMatrix = MatrixStack.pop();
+
+    //Seat
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(180,[0,1,0]),rotate(90,[1,0,0]));
+    transform = mult(transform, scale4(2, .5, .2));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-6, 1, 0.4), transform));
+    DrawHalfCircle();
+    modelViewMatrix = mult(modelViewMatrix, translate(0, -1, 0));
+    DrawHalfCircle();
+    modelViewMatrix = mult(modelViewMatrix, translate(0, -1, 0));
+    DrawHalfCircle();
+    modelViewMatrix = MatrixStack.pop();
+
+    //Legs
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(180,[0,1,0]),scale4(.3, .9, .2));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-8.3, 0, 0), transform));
+    DrawPillarExtrusion();
+    modelViewMatrix = mult(modelViewMatrix, translate(-16, 0, 0));
+    DrawPillarExtrusion();
+    modelViewMatrix = mult(modelViewMatrix, translate(0, 0, -5));
+    DrawPillarExtrusion();
+    modelViewMatrix = mult(modelViewMatrix, translate(16, 0, 0));
+    DrawPillarExtrusion();
+    modelViewMatrix = MatrixStack.pop();
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(ambientProduct) );
+
+}
+
 function DrawRoad(){
     let white = rgb(255,255,255,255);
     let gray = rgb(45,45,45,255);
@@ -1925,7 +1981,19 @@ var render = function() {
     }
 
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, translate(22, 6.8, 10));
+    modelViewMatrix = mult(modelViewMatrix, translate(15, 6.8, 20));
+    modelViewMatrix = mult(modelViewMatrix, scale4(1.2, 1.2, 1.2));
+    
+    DrawStreetLamp();
+    DrawStreetLight();
+
+    modelViewMatrix = mult(modelViewMatrix, translate(0, -4, 0));
+    modelViewMatrix = mult(modelViewMatrix, scale4(2, 3, 2));
+    DrawStreetLampPole();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(-8, 6.8, 20));
     modelViewMatrix = mult(modelViewMatrix, scale4(1.2, 1.2, 1.2));
     
     DrawStreetLamp();
@@ -1949,6 +2017,12 @@ var render = function() {
     DrawApartmentRails();
     DrawApartmentRoof();
     DrawApartmentDoors();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(10, 0, 20));
+    modelViewMatrix = mult(modelViewMatrix, scale4(1.2, 1.2, 1.2));
+    DrawBench();
     modelViewMatrix = MatrixStack.pop();
 
     DrawRoad();
