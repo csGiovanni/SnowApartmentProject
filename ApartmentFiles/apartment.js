@@ -58,6 +58,7 @@ var ConeIndex, ConeAmount;
 var CylinderIndex, CylinderAmount;
 var TrashCanLidIndex, TrashCanStripIndex;
 var TrashCanLidAmount, TrashCanStripAmount;
+var FountainIndex, FountainAmount;
 
 var dynamicVertices = [];
 var vertices = [
@@ -871,7 +872,101 @@ function DrawTrafficCone() {
        flatten(diffuseProduct) );
 
     gl.uniform4fv(ambientProductLoc,
-    flatten(ambientProduct) );
+        flatten(ambientProduct) );
+}
+
+function DrawFountain() {
+    let gray = vec4(0.3, 0.3, 0.3, 1.0)
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, FountainIndex, FountainAmount );
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+
+// Fountain initial 2d line points for surface of revolution  (25 points)
+var fountainPoints = [
+	[1.0, 0.0, 0.0],
+    [1.0, 0.1, 0.0],
+    [0.9, 0.1, 0.0],
+    [0.9, 0.2, 0.0],
+    [0.7, 0.2, 0.0],// <-
+    [0.7, 0.3, 0.0],// <-
+    [0.9, 0.3, 0.0],
+    [0.9, 0.4, 0.0],
+    [0.8, 0.4, 0.0],
+    [0.8, 0.1, 0.0],
+    [0.2, 0.1, 0.0],
+    [0.2, 0.9, 0.0],
+    [0.3, 0.9, 0.0],
+    [0.3, 1.0, 0.0],
+    [0.0, 1.0, 0.0],
+
+
+];
+
+//Sets up the vertices array so the Fountain can be drawn
+function SurfaceRevPoints(points)
+{
+    // Remember where our Surface of Revolution starts
+    let index = dynamicVertices.length;
+    let point_count = points.length;
+	//Setup initial points matrix
+	for (var i = 0; i < point_count; i++)
+	{
+		dynamicVertices.push(vec4(points[i][0], points[i][1],
+            points[i][2], 1));
+	}
+
+	var r;
+    var t=Math.PI/12;
+
+    // sweep the original curve another "angle" degree
+    for (var j = 0; j < 24; j++)
+    {
+        var angle = (j+1)*t;
+
+        // for each sweeping step, generate 25 new points corresponding to the original points
+            for(var i = 0; i < point_count ; i++ )
+            {
+                r = dynamicVertices[index + i][0];
+                dynamicVertices.push(vec4(r*Math.cos(angle), dynamicVertices[index + i][1], -r*Math.sin(angle), 1));
+            }
+    }
+
+    var N = points.length;
+    // quad strips are formed slice by slice (not layer by layer)
+    for (var i=0; i<24; i++) // slices
+    {
+        for (var j=0; j < N - 1; j++)  // layers
+        {
+                quadDynamic(
+                    index + i*N+j, 
+                    index + (i+1)*N+j, 
+                    index + (i+1)*N+(j+1), 
+                    index + i*N+(j+1));
+        }
+    }
+}
+
+function MakeFountain() {
+    // Remember where our Fountain is
+    FountainIndex = pointsArray.length;
+    SurfaceRevPoints(fountainPoints);
+    // Calculate how many new points were created
+    FountainAmount = pointsArray.length - FountainIndex;
 }
 
 function scale4(a, b, c) {
@@ -929,6 +1024,7 @@ window.onload = function init() {
 
     DynamicCylinder(8, 10);
     DynamicCone();
+    MakeFountain();
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
@@ -1157,6 +1253,12 @@ var render = function() {
     DrawTrafficCone();
     modelViewMatrix = MatrixStack.pop();
 
+    MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, translate(-8, 0, 5));
     DrawTrashCan();
+    modelViewMatrix = MatrixStack.pop();
+
+    modelViewMatrix = mult(modelViewMatrix, translate(-20, 0, 10));
+    modelViewMatrix = mult(modelViewMatrix, scale4(8, 8, 8));
+    DrawFountain();
 }
