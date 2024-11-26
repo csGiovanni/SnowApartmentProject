@@ -63,6 +63,18 @@ var StreetLampHeadIndex, StreetLampHeadAmount;
 var StreetLightIndex, StreeLightAmount;
 var StreetLampPoleIndex, StreetLampPoleAmount;
 
+var FlickerWaitInFrames = 80;
+var FlickerLength = 4;
+var FlickerNum = 6;
+var frameCount = 0;
+var flickerFrameCount = 0;
+var flickerCount = 0;
+
+var StreetLightOn = true;
+
+var RoadIndex, RoadAmount;
+var RoadGravelIndex, RoadGravelAmount;
+
 var ConeIndex, ConeAmount;
 var CylinderIndex, CylinderAmount;
 var TrashCanLidIndex, TrashCanStripIndex;
@@ -466,15 +478,25 @@ function DrawStreetLamp(){
 
 function DrawStreetLight(){
     let yellow = vec4(1.0,1.0,0,1);
+    let black = vec4(0.0,0.0,0,1);
     
     // Draw Base
 
     // Choose Color
-    gl.uniform4fv(diffuseProductLoc,
-    flatten(mult(lightDiffuse, yellow)));
- 
-    gl.uniform4fv(ambientProductLoc,
-    flatten(mult(lightAmbient, yellow)));
+    if(StreetLightOn){
+        gl.uniform4fv(diffuseProductLoc,
+            flatten(mult(lightDiffuse, yellow)));
+         
+        gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, yellow)));
+    }
+    else{
+        gl.uniform4fv(diffuseProductLoc,
+            flatten(mult(lightDiffuse, black)));
+         
+        gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, black)));
+    }
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, StreetLightIndex, StreetLightAmount );
@@ -862,6 +884,31 @@ function DrawTrashCanStrips() {
     gl.drawArrays( gl.TRIANGLES, TrashCanStripIndex, TrashCanStripAmount );
 }
 
+function DrawRoad(){
+    let white = rgb(255,255,255,255);
+    let gray = rgb(45,45,45,255);
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, RoadIndex, RoadAmount );
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, RoadGravelIndex, RoadGravelAmount );
+}
+
 function DrawTrashCan() {
     let red = rgb(245, 20, 0, 255);
     let black = rgb(0, 0, 0, 255);
@@ -987,7 +1034,6 @@ function DrawFountain() {
          flatten(ambientProduct) );
 }
 
-<<<<<<< Updated upstream
 function DrawSnowFlake() {
     let white = vec4(1,1,1,1);
     
@@ -1034,7 +1080,7 @@ function DrawSnowFlake() {
 
     gl.uniform4fv(ambientProductLoc,
     flatten(ambientProduct) );
-=======
+}
 function DrawStreetLampPole() {
     let gray = vec4(0.2, 0.2, 0.2, 1.0)
 
@@ -1167,7 +1213,6 @@ function DrawApartmentDoors(){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
->>>>>>> Stashed changes
 }
 
 // Fountain initial 2d line points for surface of revolution  (25 points)
@@ -1264,6 +1309,20 @@ function MakeStreetLampPole() {
     StreetLampPoleAmount = pointsArray.length - StreetLampPoleIndex;
 }
 
+function MakeRoad(){
+    RoadIndex = pointsArray.length;
+
+    cube(100,0.1,100,-35,0,-50,0);
+
+    RoadAmount = pointsArray.length - RoadIndex;
+
+    RoadGravelIndex = pointsArray.length;
+
+    cube(100,0.1,20,-35,0.1,25,0);
+
+    RoadGravelAmount = pointsArray.length - RoadGravelIndex;
+}
+
 function scale4(a, b, c) {
     var result = mat4();
     result[0][0] = a;
@@ -1317,6 +1376,7 @@ window.onload = function init() {
 
     MakeBuilding(1.5,-0.8,-0.5);
     MakeTrashCan(4, .5, 3);
+    MakeRoad();
 
     // DYNAMIC CALLS DOWN HERE ONLY
 
@@ -1550,6 +1610,28 @@ function RegulateSnowflakes() {
     }
 }
 
+function FlickerLights(){
+    if(frameCount < FlickerWaitInFrames){
+        frameCount ++;
+    }
+    else{
+        if(flickerFrameCount < FlickerLength){
+            flickerFrameCount++;
+        }
+        else{
+            flickerFrameCount = 0;
+            flickerCount++;
+            StreetLightOn = !StreetLightOn;
+        }
+    }
+
+    if(flickerCount >= FlickerNum){
+        frameCount = 0;
+        flickerFrameCount = 0;
+        flickerCount = 0;
+    }
+}
+
 function Animate() {
     if (!doAnimate) return;
     RegulateSnowflakes();
@@ -1561,6 +1643,8 @@ function Animate() {
             pos[2]
         );
     }
+    FlickerLights();
+
 }
 
 var at = vec3(0, 0, 0);
@@ -1609,12 +1693,12 @@ var render = function() {
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,0,15), scale4(2, 2, 2)));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,0.2,15), scale4(1, 1, 1)));
     DrawTrafficCone();
     modelViewMatrix = MatrixStack.pop();
 
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, translate(-8, 0, 5));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-8, 0.2, 5), scale4(.3, .3, .3)));
     DrawTrashCan();
     modelViewMatrix = MatrixStack.pop();
 
@@ -1622,7 +1706,6 @@ var render = function() {
     modelViewMatrix = mult(modelViewMatrix, translate(-20, 0, 10));
     modelViewMatrix = mult(modelViewMatrix, scale4(8, 8, 8));
     DrawFountain();
-<<<<<<< Updated upstream
     modelViewMatrix = MatrixStack.pop();
 
     for (let i = 0; i < snowflakes.length; i++) {
@@ -1651,12 +1734,9 @@ var render = function() {
              flatten(ambientProduct) );
     }
 
-    requestAnimFrame(render);
-=======
-
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, translate(4, 1.05, 2));
-    modelViewMatrix = mult(modelViewMatrix, scale4(.2, .2, .2));
+    modelViewMatrix = mult(modelViewMatrix, translate(22, 6.8, 10));
+    modelViewMatrix = mult(modelViewMatrix, scale4(1.2, 1.2, 1.2));
     
     DrawStreetLamp();
     DrawStreetLight();
@@ -1666,14 +1746,18 @@ var render = function() {
     DrawStreetLampPole();
     modelViewMatrix = MatrixStack.pop();
 
+    requestAnimFrame(render);
+
+    
+
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, translate(.5, 0.1, -1.8));
-    modelViewMatrix = mult(modelViewMatrix, scale4(0.2, 0.2, 0.2));
+    modelViewMatrix = mult(modelViewMatrix, translate(.5, 1.15, -1.8));
+    modelViewMatrix = mult(modelViewMatrix, scale4(1.4, 1.4, 1.4));
     DrawBuilding(1.5,-0.8,-0.5);
     DrawApartmentRails();
     DrawApartmentRoof();
     DrawApartmentDoors();
     modelViewMatrix = MatrixStack.pop();
 
->>>>>>> Stashed changes
+    DrawRoad();
 }
