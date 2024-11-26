@@ -1873,12 +1873,22 @@ var render = function() {
     gl.drawArrays( gl.TRIANGLES, 0, numVertices );
 
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,0.2,15), scale4(1, 1, 1)));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-30,0.2,42), scale4(1, 1, 1)));
     DrawTrafficCone();
     modelViewMatrix = MatrixStack.pop();
 
     MatrixStack.push(modelViewMatrix);
-    modelViewMatrix = mult(modelViewMatrix, mult(translate(-8, 0.2, 5), scale4(.3, .3, .3)));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-30,0.2,35), scale4(1, 1, 1)));
+    DrawTrafficCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-30,0.2,28), scale4(1, 1, 1)));
+    DrawTrafficCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(20, 0.2, 10), scale4(.3, .3, .3)));
     DrawTrashCan();
     modelViewMatrix = MatrixStack.pop();
 
