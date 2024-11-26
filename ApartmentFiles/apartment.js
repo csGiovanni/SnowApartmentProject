@@ -896,6 +896,54 @@ function DrawFountain() {
          flatten(ambientProduct) );
 }
 
+function DrawSnowFlake() {
+    let white = vec4(1,1,1,1);
+    
+    // Draw Base
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+ 
+     gl.uniform4fv(ambientProductLoc,
+     flatten(mult(lightAmbient, white)));
+
+
+
+    let width = 0.1;
+    let height = 1.0;
+    MatrixStack.push(modelViewMatrix);
+    let transform = scale4(width, 1, width);
+    modelViewMatrix = mult(modelViewMatrix, mult(transform, translate(0, -0.5, 0)));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(45, [1, 0, 0]), scale4(width, height, width));
+    modelViewMatrix = mult(modelViewMatrix, mult(transform, translate(0, -0.5, 0)));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(-45, [1, 0, 0]), scale4(width, height, width));
+    modelViewMatrix = mult(modelViewMatrix, mult(transform, translate(0, -0.5, 0)));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(90, [1, 0, 0]), scale4(width, height, width));
+    modelViewMatrix = mult(modelViewMatrix, mult(transform, translate(0, -0.5, 0)));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+    flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+    flatten(ambientProduct) );
+}
+
 // Fountain initial 2d line points for surface of revolution  (25 points)
 var fountainPoints = [
 	[1.0, 0.0, 0.0],
@@ -938,7 +986,7 @@ function SurfaceRevPoints(points)
     {
         var angle = (j+1)*t;
 
-        // for each sweeping step, generate 25 new points corresponding to the original points
+        // for each sweeping step, generate new points corresponding to the original points
             for(var i = 0; i < point_count ; i++ )
             {
                 r = dynamicVertices[index + i][0];
@@ -998,6 +1046,8 @@ var AllInfo = {
     mousePosOnClickX : 0,
     mousePosOnClickY : 0
 };
+
+var doAnimate = true;
 
 window.onload = function init() {
     canvas = document.getElementById( "gl-canvas" );
@@ -1099,25 +1149,25 @@ window.onload = function init() {
         eyeX=document.parameterForm.xValue.value;
         eyeY=document.parameterForm.yValue.value;
         eyeZ=document.parameterForm.zValue.value;
-        render();
+        // render();
     };
 
     // These four just set the handlers for the buttons.
     document.getElementById("thetaup").addEventListener("click", function(e) {
         AllInfo.theta += AllInfo.dr;
-        render();
+        // render();
     });
     document.getElementById("thetadown").addEventListener("click", function(e) {
         AllInfo.theta -= AllInfo.dr;
-        render();
+        // render();
     });
     document.getElementById("phiup").addEventListener("click", function(e) {
         AllInfo.phi += AllInfo.dr;
-        render();
+        // render();
     });
     document.getElementById("phidown").addEventListener("click", function(e) {
         AllInfo.phi -= AllInfo.dr;
-        render();
+        // render();
     });
 
     // Set the scroll wheel to change the zoom factor.
@@ -1129,7 +1179,7 @@ window.onload = function init() {
         } else {
             AllInfo.zoomFactor += 0.1;
         }
-        render();
+        // render();
     });
 
     //************************************************************************************
@@ -1150,13 +1200,13 @@ window.onload = function init() {
             AllInfo.mousePosOnClickY = e.y;
             AllInfo.mousePosOnClickX = e.x;
         }
-        render();
+        // render();
     });
 
     document.addEventListener("mouseup", function(e) {
         AllInfo.mouseDownLeft = false;
         AllInfo.mouseDownRight = false;
-        render();
+        // render();
     });
 
     document.addEventListener("mousemove", function(e) {
@@ -1173,10 +1223,21 @@ window.onload = function init() {
             AllInfo.theta += (e.y - AllInfo.mousePosOnClickY)/100;
             AllInfo.mousePosOnClickY = e.y;
         }
-        render();
+        // render();
+    });
+
+    window.addEventListener('keydown', function(event) {
+        // Change color choice on "c" click
+        if (event.key == 'a' || event.key == 'A') {
+            doAnimate = !doAnimate;
+            console.log("DOASDKOAD");
+        }
     });
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
     render();
+
+    let intervalId = setInterval(Animate, 10);
+    // Animate();
 }
 
 function loadTexture(texture)
@@ -1205,6 +1266,55 @@ function loadTexture(texture)
     // This has an error for god knows why. I've put this code somewhere else. CTRL+F to find it
 }
 
+let MAX_SNOWFLAKES = 70;
+
+var snowflakes = [
+
+];
+
+var flake_orientations = [
+
+];
+
+function RegulateSnowflakes() {
+    for (let i = snowflakes.length - 1; i >= 0; i--) {
+        let position = snowflakes[i];
+        if (position[1] < 0) {
+            snowflakes.splice(i, 1);
+            flake_orientations.splice(i, 1);
+        }
+    }
+
+    while (snowflakes.length < MAX_SNOWFLAKES) {
+        let width = 100
+        let x = Math.random() * width - width / 2;
+        let z = Math.random() * width - width / 2;
+        let y = Math.random() * 50 + 40;
+
+        let tau = Math.PI * 2;
+
+        let ax = Math.random() * tau;
+        let ay = Math.random() * tau;
+        let az = Math.random() * tau;
+
+        snowflakes.push(vec3(x, y, z));
+        flake_orientations.push(vec3(ax, ay, az));
+    }
+}
+
+function Animate() {
+    if (!doAnimate) return;
+    RegulateSnowflakes();
+    for (let i = 0; i < snowflakes.length; i++) {
+        let pos = snowflakes[i];
+        snowflakes[i] = vec3(
+            pos[0],
+            pos[1] - 0.2,
+            pos[2]
+        );
+    }
+}
+
 var at = vec3(0, 0, 0);
 var up = vec3(0, 1, 0);
 var eye = vec3(2, 2, 2);
@@ -1212,6 +1322,8 @@ var eye = vec3(2, 2, 2);
 var eyeX=2, eyeY=2, eyeZ=2; // default eye position input values
 
 var render = function() {
+
+    // Animate();
 
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -1258,7 +1370,37 @@ var render = function() {
     DrawTrashCan();
     modelViewMatrix = MatrixStack.pop();
 
+    MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, translate(-20, 0, 10));
     modelViewMatrix = mult(modelViewMatrix, scale4(8, 8, 8));
     DrawFountain();
+    modelViewMatrix = MatrixStack.pop();
+
+    for (let i = 0; i < snowflakes.length; i++) {
+        let white = vec4(1,1,1,1);
+        // Choose Color
+        gl.uniform4fv(diffuseProductLoc,
+            flatten(mult(lightDiffuse, white)));
+    
+        gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+
+        MatrixStack.push(modelViewMatrix);
+        let pos = snowflakes[i];
+
+        let rot = flake_orientations[i];
+        let transform = mult(translate(pos[0], pos[1], pos[2]), rotate(90, [rot[0], rot[1], rot[2]]));
+        modelViewMatrix = mult(modelViewMatrix, transform);
+        DrawSnowFlake();
+        modelViewMatrix = MatrixStack.pop();
+
+        // RESET COLOR
+        gl.uniform4fv(diffuseProductLoc,
+            flatten(diffuseProduct) );
+     
+         gl.uniform4fv(ambientProductLoc,
+             flatten(ambientProduct) );
+    }
+
+    requestAnimFrame(render);
 }
