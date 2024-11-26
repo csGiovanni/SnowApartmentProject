@@ -3,8 +3,13 @@
  * Giovanni Del Valle, Timmy Do
  * 
  * Objects:
- *  Building, Street Lamp : Timmy Do
- *  Trash Can, Traffic Cone : Giovanni Del Valle
+ *  Timmy Do
+ *  --------
+ *  Building, Street Lamp
+ * 
+ *  Giovanni Del Valle
+ *  -------------------
+ *  Trash Can, Traffic Cone, Archway, Snowflakes, and Fountain
  * 
  * Version Control : GitHub
  */
