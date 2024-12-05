@@ -52,6 +52,8 @@ var texCoord = [
 
 var texture, texture2, texture3, texture4, texture5, texture6, texture7;
 
+var music1 = new Audio("SnowfallByOneheartAndReidenshi.mp3");
+
 // Variables that control the orthographic projection bounds.
 var y_max = 5;
 var y_min = -5;
@@ -1817,6 +1819,8 @@ var AllInfo = {
     zoomFactor : 1,
     translateX : 0,
     translateY : 0,
+    translateZ: 0,
+    movementSpeed : 4,
 
     // Camera rotate control variables.
     phi : 1,
@@ -1894,6 +1898,9 @@ window.onload = function init() {
     var vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
     gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray( vTexCoord );
+
+    // play music
+    music1.play();
 
     // create the texture object
     texture = gl.createTexture();
@@ -2098,12 +2105,37 @@ window.onload = function init() {
             console.log("DOASDKOAD");
         }
     });
+
+    window.addEventListener('keydown', function(event) {
+        // Change color choice on "c" click
+        if (event.key == "ArrowLeft") {
+            AllInfo.translateX += .1 * AllInfo.movementSpeed;
+        }
+        if (event.key == "ArrowUp") {
+            AllInfo.translateZ += .1 * AllInfo.movementSpeed;
+        }
+        if (event.key == "ArrowRight") {
+            AllInfo.translateX -= .1 * AllInfo.movementSpeed;
+        }
+        if (event.key == "ArrowDown") {
+            AllInfo.translateZ -= .1 * AllInfo.movementSpeed;
+        }
+
+    });
+        
+    
+
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
     render();
 
     let intervalId = setInterval(Animate, 10);
     // Animate();
 }
+
+music1.addEventListener('ended', function() {
+    music1.currentTime = 0; // Reset to the beginning
+    music1.play();
+});
 
 function loadTexture(texture, whichTexture)
 {
@@ -2186,6 +2218,7 @@ function FlickerLights(){
         frameCount = 0;
         flickerFrameCount = 0;
         flickerCount = 0;
+        
     }
 }
 
@@ -2226,7 +2259,8 @@ var render = function() {
                               x_max*AllInfo.zoomFactor - AllInfo.translateX,
                               y_min*AllInfo.zoomFactor - AllInfo.translateY,
                               y_max*AllInfo.zoomFactor - AllInfo.translateY,
-                              near, far);
+                              near,
+                              far);
 
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
 
