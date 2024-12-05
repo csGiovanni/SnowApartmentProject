@@ -88,6 +88,7 @@ var RoadGravelIndex, RoadGravelAmount;
 
 var ConeIndex, ConeAmount;
 var CylinderIndex, CylinderAmount;
+var SphereIndex, SphereAmount;
 var TrashCanLidIndex, TrashCanStripIndex;
 var TrashCanLidAmount, TrashCanStripAmount;
 var FountainIndex, FountainAmount;
@@ -719,11 +720,36 @@ function MakeBuilding(xLoc,yLoc,zLoc){
 
 }
 
+function SphereArc(){
+
+    var radius=1.5;
+    var num=12;
+    var alpha=Math.PI/num;
+
+    //halfCirclePoints.push(vec4(0, 0, 0, 1));
+
+    //for (var i=2*num; i>=0; i--)   // this is extruded whole circle
+    for (var i=num; i>=0; i--)     // this is extruded half circle
+    {
+        halfCirclePoints.push(vec4(radius*Math.cos(i*alpha - Math.PI/2), radius*Math.sin(i*alpha - Math.PI/2), 0, 1));
+    }
+}
+
 function HalfCircle()
 {
     HalfCircleIndex = pointsArray.length;
     HalfExtrudedPolygon(12);
     HalfCircleAmount = pointsArray.length - HalfCircleIndex;
+}
+
+function Sphere(){
+    SphereIndex = pointsArray.length;
+    SurfaceRevPoints(halfCirclePoints);
+    SphereAmount = pointsArray.length - SphereIndex;
+}
+function DrawSphere(){
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, SphereIndex, SphereAmount );
 }
 
 function OctogonalExtrusion() {
@@ -1076,7 +1102,7 @@ function DrawBench(){
 }
 
 function DrawRoad(){
-    let white = rgb(255,255,255,255);
+    let white = vec4(1.0,1.0,1.0,1.0);
     let gray = rgb(45,45,45,255);
 
     // Choose Color
@@ -1098,6 +1124,124 @@ function DrawRoad(){
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, RoadGravelIndex, RoadGravelAmount );
+}
+
+function DrawSnowman(){
+    let white = vec4(1.0,1.0,1.0,1.0);
+    let gray = rgb(45,45,45,255);
+    let orange = rgb(255,165,0,255);
+    let brown = rgb(150,75,0,255);
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+
+
+    //Body
+    MatrixStack.push(modelViewMatrix);
+    let transform = scale4(1, .5, 1);
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawSphere();
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0, 2, 0), scale4(.9,.9,.9)));
+    DrawSphere();
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0, 2.2, 0), scale4(.6,.8,.6)));
+    DrawSphere();
+    modelViewMatrix = MatrixStack.pop();
+
+    //Hat band
+    MatrixStack.push(modelViewMatrix);
+    transform = scale4(.51, .1, .51);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,2.5,0), transform));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, gray)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, gray)));
+
+    //Eyes
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(translate(0.35,2.2,.8),scale4(.08, .08, .08));
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawSphere();
+    modelViewMatrix = mult(modelViewMatrix, translate(-.7/.08,0,0));
+    DrawSphere();
+    modelViewMatrix = MatrixStack.pop();
+
+    //Buttons
+    MatrixStack.push(modelViewMatrix);
+    transform = scale4(.1, .1, .1);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,1.5,.8), transform));
+    DrawSphere();
+    modelViewMatrix = mult(modelViewMatrix, translate(0,-3,4));
+    DrawSphere();
+    modelViewMatrix = mult(modelViewMatrix, translate(0,-3,.5));
+    DrawSphere();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Hat
+    MatrixStack.push(modelViewMatrix);
+    transform = scale4(.5, .5, .5);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,2.4,0), transform));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    transform = scale4(1, .1, 1);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,2.4,0), transform));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, orange)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, orange)));
+    
+    //Nose
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(90,[1,0,0]),scale4(.15, .5, .15));
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0,2,.8), transform));
+    DrawCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, brown)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, brown)));
+    
+    //Arms
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(90,[0,0,1]),scale4(.1, 2.4, .1));
+    transform = mult(rotate(15,[0,0,1]),transform);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(-1,1,0), transform));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(rotate(90,[0,0,1]),scale4(.1, 2.4, .1));
+    transform = mult(rotate(345,[0,0,1]),transform);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(3.5,0.5,0), transform));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(ambientProduct) );
 }
 
 function DrawTrashCan() {
@@ -1494,6 +1638,10 @@ var streetLampPoints = [
 
 ]
 
+var halfCirclePoints = [
+
+]
+
 //Sets up the vertices array so the Fountain can be drawn
 function SurfaceRevPoints(points)
 {
@@ -1630,6 +1778,8 @@ window.onload = function init() {
     MakeFountain();
     HalfCircle();
     OctogonalExtrusion();
+    SphereArc();
+    Sphere();
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
@@ -2037,6 +2187,13 @@ var render = function() {
     modelViewMatrix = MatrixStack.pop();
 
     DrawRoad();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(10, 1, 10));
+    modelViewMatrix = mult(modelViewMatrix, rotate(-15,[0,1,0]));
+    modelViewMatrix = mult(modelViewMatrix, scale4(1, 1, 1));
+    DrawSnowman();
+    modelViewMatrix = MatrixStack.pop();
 
     requestAnimFrame(render);
 }
