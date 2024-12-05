@@ -21,7 +21,7 @@
  */
 
 
-var canvas, gl;
+var canvas, gl, program;
 
 var numVertices  = 0;
 var pointsArray = [];
@@ -50,7 +50,7 @@ var texCoord = [
     vec2(.5, 0),
 ];
 
-var texture;
+var texture, texture2, texture3, texture4, texture5, texture6, texture7;
 
 // Variables that control the orthographic projection bounds.
 var y_max = 5;
@@ -598,6 +598,7 @@ function DrawStreetLamp(){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawStreetLight(){
@@ -625,12 +626,13 @@ function DrawStreetLight(){
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, StreetLightIndex, StreetLightAmount );
 
-    // RESET COLOR
+    // RESET COLORs
     gl.uniform4fv(diffuseProductLoc,
         flatten(diffuseProduct) );
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function MakeBuilding(xLoc,yLoc,zLoc){
@@ -1056,6 +1058,8 @@ function DrawBench(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, white)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 6);
+        
 
     //Back
     MatrixStack.push(modelViewMatrix);
@@ -1099,12 +1103,13 @@ function DrawBench(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 
 }
 
 function DrawRoad(){
     let white = vec4(1.0,1.0,1.0,1.0);
-    let gray = rgb(45,45,45,255);
+    let gray = rgb(155,155,155,255);
 
     // Choose Color
     gl.uniform4fv(diffuseProductLoc,
@@ -1112,6 +1117,7 @@ function DrawRoad(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, white)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 1);
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, RoadIndex, RoadAmount );
@@ -1122,6 +1128,7 @@ function DrawRoad(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, gray)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 5);
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, RoadGravelIndex, RoadGravelAmount );
@@ -1131,7 +1138,7 @@ function DrawSnowman(){
     let white = vec4(1.0,1.0,1.0,1.0);
     let gray = rgb(45,45,45,255);
     let orange = rgb(255,165,0,255);
-    let brown = rgb(150,75,0,255);
+    let brown = rgb(255,255,0,255);
 
     // Choose Color
     gl.uniform4fv(diffuseProductLoc,
@@ -1139,6 +1146,7 @@ function DrawSnowman(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, white)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 1);
 
 
     //Body
@@ -1165,6 +1173,7 @@ function DrawSnowman(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, gray)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 
     //Eyes
     MatrixStack.push(modelViewMatrix);
@@ -1205,6 +1214,7 @@ function DrawSnowman(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, orange)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
     
     //Nose
     MatrixStack.push(modelViewMatrix);
@@ -1219,6 +1229,7 @@ function DrawSnowman(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, brown)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 4);
     
     //Arms
     MatrixStack.push(modelViewMatrix);
@@ -1243,6 +1254,7 @@ function DrawSnowman(){
 
     gl.uniform4fv(ambientProductLoc,
         flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawTrashCan() {
@@ -1283,6 +1295,7 @@ function DrawTrashCan() {
 
     gl.uniform4fv(ambientProductLoc,
         flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawTrafficCone() {
@@ -1347,6 +1360,7 @@ function DrawTrafficCone() {
 
     gl.uniform4fv(ambientProductLoc,
         flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawFountain() {
@@ -1368,6 +1382,7 @@ function DrawFountain() {
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawTree(){
@@ -1380,6 +1395,7 @@ function DrawTree(){
  
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, green)));
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 3);
 
     MatrixStack.push(modelViewMatrix);
     transform = translate(0,.1,0);
@@ -1396,6 +1412,7 @@ function DrawTree(){
  
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, brown)));
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 4);
 
     MatrixStack.push(modelViewMatrix);
     transform = scale4(.1,.1,.1);
@@ -1409,6 +1426,7 @@ function DrawTree(){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawSnowFlake() {
@@ -1457,6 +1475,7 @@ function DrawSnowFlake() {
 
     gl.uniform4fv(ambientProductLoc,
     flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 function DrawStreetLampPole() {
     let gray = vec4(0.2, 0.2, 0.2, 1.0)
@@ -1477,6 +1496,7 @@ function DrawStreetLampPole() {
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawBuilding(xLoc, yLoc, zLoc){
@@ -1490,6 +1510,7 @@ function DrawBuilding(xLoc, yLoc, zLoc){
  
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, gray)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 2);
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, ApartmentIndex, ApartmentAmount );
@@ -1505,6 +1526,7 @@ function DrawBuilding(xLoc, yLoc, zLoc){
  
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, white)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 
     MatrixStack.push(modelViewMatrix);
     modelViewMatrix = mult(modelViewMatrix, translate(xLoc + 20,yLoc+15,zLoc -5));
@@ -1527,6 +1549,7 @@ function DrawBuilding(xLoc, yLoc, zLoc){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawApartmentRails(){
@@ -1549,6 +1572,7 @@ function DrawApartmentRails(){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 function DrawApartmentRoof(){
     let gray = vec4(1.0, 1.0, 1.0, 1.0)
@@ -1569,6 +1593,7 @@ function DrawApartmentRoof(){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawApartmentDoors(){
@@ -1580,6 +1605,7 @@ function DrawApartmentDoors(){
  
     gl.uniform4fv(ambientProductLoc,
         flatten(mult(lightAmbient, gray)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 4);
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays( gl.TRIANGLES, ApartmentDoorIndex, ApartmentDoorAmount );
@@ -1590,6 +1616,7 @@ function DrawApartmentDoors(){
  
      gl.uniform4fv(ambientProductLoc,
          flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 function DrawHalfCircle() {
@@ -1644,6 +1671,7 @@ function DrawArchway() {
 
     gl.uniform4fv(ambientProductLoc,
     flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
 // Fountain initial 2d line points for surface of revolution  (25 points)
@@ -1819,7 +1847,7 @@ window.onload = function init() {
     gl.enable(gl.DEPTH_TEST);
 
     //  Load shaders and initialize attribute buffers
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
     MakeStreetLamp();  // created the color cube - point positions and face colors
@@ -1874,10 +1902,82 @@ window.onload = function init() {
     texture.image = new Image();
 
     // register the event handler to be called on loading an image
-    texture.image.onload = function() {  loadTexture(texture);}
+    texture.image.onload = function() {  loadTexture(texture, gl.TEXTURE0);}
 
     // Tell the broswer to load an image
     texture.image.src='marble2.jpg';   // test with different marble textures images
+
+    // create the texture object
+    texture2 = gl.createTexture();
+
+    // create the image object
+    texture2.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture2.image.onload = function() {  loadTexture(texture2, gl.TEXTURE1);}
+
+    // Tell the broswer to load an image
+    texture2.image.src='snow.jpg';   // test with different marble textures images
+
+    // create the texture object
+    texture3 = gl.createTexture();
+
+    // create the image object
+    texture3.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture3.image.onload = function() {  loadTexture(texture3, gl.TEXTURE2);}
+
+    // Tell the broswer to load an image
+    texture3.image.src='bricks.jpg';   // test with different marble textures images
+
+    // create the texture object
+    texture4 = gl.createTexture();
+
+    // create the image object
+    texture4.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture4.image.onload = function() {  loadTexture(texture4, gl.TEXTURE3);}
+
+    // Tell the broswer to load an image
+    texture4.image.src='leaves.jpg';   // test with different marble textures images
+
+    // create the texture object
+    texture5 = gl.createTexture();
+
+    // create the image object
+    texture5.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture5.image.onload = function() {  loadTexture(texture5, gl.TEXTURE4);}
+
+    // Tell the broswer to load an image
+    texture5.image.src='wood.jpg';   // test with different marble textures images
+
+    // create the texture object
+    texture6 = gl.createTexture();
+
+    // create the image object
+    texture6.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture6.image.onload = function() {  loadTexture(texture6, gl.TEXTURE5);}
+
+    // Tell the broswer to load an image
+    texture6.image.src='asphalt.jpg';   // test with different marble textures images
+
+    // create the texture object
+    texture7 = gl.createTexture();
+
+    // create the image object
+    texture7.image = new Image();
+
+    // register the event handler to be called on loading an image
+    texture7.image.onload = function() {  loadTexture(texture7, gl.TEXTURE6);}
+
+    // Tell the broswer to load an image
+    texture7.image.src='plank.jpg';   // test with different marble textures images
 
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
@@ -2005,13 +2105,13 @@ window.onload = function init() {
     // Animate();
 }
 
-function loadTexture(texture)
+function loadTexture(texture, whichTexture)
 {
      // Flip the image's y axis
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
     // Enable texture unit 0
-    gl.activeTexture(gl.TEXTURE0);
+    gl.activeTexture(whichTexture);
 
     // bind the texture object to the target
     gl.bindTexture( gl.TEXTURE_2D, texture );
@@ -2199,6 +2299,7 @@ var render = function() {
      
          gl.uniform4fv(ambientProductLoc,
              flatten(ambientProduct) );
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
     }
 
     MatrixStack.push(modelViewMatrix);
