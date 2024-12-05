@@ -94,6 +94,7 @@ var TrashCanLidAmount, TrashCanStripAmount;
 var FountainIndex, FountainAmount;
 var HalfCircleIndex, HalfCircleAmount;
 var PillarIndex, PillarAmount;
+var TreeLeavesIndex, TreeLeavesAmount;
 
 var dynamicVertices = [
     //Streetlight Top and Building Structure (Timmy Do)
@@ -1369,6 +1370,47 @@ function DrawFountain() {
          flatten(ambientProduct) );
 }
 
+function DrawTree(){
+    let brown = rgb(150,75,0,255);
+    let green = rgb(0,125,0,255);
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, green)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, green)));
+
+    MatrixStack.push(modelViewMatrix);
+    transform = translate(0,.1,0);
+    modelViewMatrix = mult(modelViewMatrix, transform);
+        
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, TreeLeavesIndex, TreeLeavesAmount );
+    modelViewMatrix = MatrixStack.pop();
+
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, brown)));
+ 
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, brown)));
+
+    MatrixStack.push(modelViewMatrix);
+    transform = scale4(.1,.1,.1);
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+ 
+     gl.uniform4fv(ambientProductLoc,
+         flatten(ambientProduct) );
+}
+
 function DrawSnowFlake() {
     let white = vec4(1,1,1,1);
     
@@ -1642,6 +1684,16 @@ var halfCirclePoints = [
 
 ]
 
+var treeLeavesPoints = [
+    [0,1,0],
+    [0.2,0.7,0],
+    [0.1,0.7,0],
+    [0.3,0.4,0],
+    [0.2,0.4,0],
+    [0.5,0,0],
+    [0,0,0]
+]
+
 //Sets up the vertices array so the Fountain can be drawn
 function SurfaceRevPoints(points)
 {
@@ -1692,6 +1744,12 @@ function MakeFountain() {
     SurfaceRevPoints(fountainPoints);
     // Calculate how many new points were created
     FountainAmount = pointsArray.length - FountainIndex;
+}
+
+function MakeTreeLeaves() {
+    TreeLeavesIndex = pointsArray.length;
+    SurfaceRevPoints(treeLeavesPoints);
+    TreeLeavesAmount = pointsArray.length - TreeLeavesIndex;
 }
 
 function MakeStreetLampPole() {
@@ -1770,12 +1828,14 @@ window.onload = function init() {
     MakeBuilding(1.5,-0.8,-0.5);
     MakeTrashCan(4, .5, 3);
     MakeRoad();
+    
 
     // DYNAMIC CALLS DOWN HERE ONLY
 
     DynamicCylinder(8, 10);
     DynamicCone();
     MakeFountain();
+    MakeTreeLeaves();
     HalfCircle();
     OctogonalExtrusion();
     SphereArc();
@@ -2193,6 +2253,13 @@ var render = function() {
     modelViewMatrix = mult(modelViewMatrix, rotate(-15,[0,1,0]));
     modelViewMatrix = mult(modelViewMatrix, scale4(1, 1, 1));
     DrawSnowman();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, translate(50, 0, 10));
+    modelViewMatrix = mult(modelViewMatrix, rotate(-15,[0,1,0]));
+    modelViewMatrix = mult(modelViewMatrix, scale4(15, 15, 15));
+    DrawTree();
     modelViewMatrix = MatrixStack.pop();
 
     requestAnimFrame(render);
