@@ -9,6 +9,8 @@
  *  Building (Composite), Street Lamp(Polygonal Mesh), 
  *  Part 2:
  *  Street Lamp Pole (Surface of Revolution), Bench (Extruded Shape), Road (Third object of choice)
+ *  Part 3:
+ *  Christmas Tree, Snowman
  * 
  *  Giovanni Del Valle
  *  -------------------
@@ -16,6 +18,8 @@
  *  Trash Can (Polygonal Mesh), Traffic Cone (Composite), 
  *  Part 2;
  *  Archway (Extruded Shape), Fountain (Surface of Revolution), Snowflakes (Third object of choice)
+ *  Part 3:
+ *  Santa, Christmas Star
  * 
  * Version Control : GitHub
  */
