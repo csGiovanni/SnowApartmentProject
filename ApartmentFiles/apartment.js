@@ -52,7 +52,13 @@ var texCoord = [
 
 var texture, texture2, texture3, texture4, texture5, texture6, texture7;
 
-var music1 = new Audio("SnowfallByOneheartAndReidenshi.mp3");
+var musicArray = [];
+var musicIndex = 0;
+var music1;
+
+musicArray.push(new Audio("LastChristmasSlowed.mp3"));
+musicArray.push(new Audio("MoonlikeSmile.mp3"));
+musicArray.push(new Audio("SnowfallByOneheartAndReidenshi.mp3"));
 
 // Variables that control the orthographic projection bounds.
 var y_max = 5;
@@ -2006,6 +2012,7 @@ window.onload = function init() {
     gl.enableVertexAttribArray( vTexCoord );
 
     // play music
+    music1 = musicArray[musicIndex];
     music1.play();
 
     // create the texture object
@@ -2235,18 +2242,25 @@ window.onload = function init() {
     });
 
     window.addEventListener('keydown', function(event) {
-        // Change color choice on "c" click
-        if (event.key == "ArrowLeft") {
-            AllInfo.translateX += .1 * AllInfo.movementSpeed;
-        }
-        if (event.key == "ArrowUp") {
-            AllInfo.translateZ += .1 * AllInfo.movementSpeed;
-        }
         if (event.key == "ArrowRight") {
-            AllInfo.translateX -= .1 * AllInfo.movementSpeed;
+            music1.pause();
+            musicIndex++;
+            if(musicIndex > 2){
+                musicIndex = 0;
+            }
+            music1 = musicArray[musicIndex];
+            music1.currentTime = 0; // Reset to the beginning
+            music1.play();
         }
-        if (event.key == "ArrowDown") {
-            AllInfo.translateZ -= .1 * AllInfo.movementSpeed;
+        if (event.key == "ArrowLeft") {
+            music1.pause();
+            musicIndex--;
+            if(musicIndex < 0){
+                musicIndex = 2;
+            }
+            music1 = musicArray[musicIndex];
+            music1.currentTime = 0; // Reset to the beginning
+            music1.play();
         }
 
     });
@@ -2259,11 +2273,6 @@ window.onload = function init() {
     let intervalId = setInterval(Animate, 10);
     // Animate();
 }
-
-music1.addEventListener('ended', function() {
-    music1.currentTime = 0; // Reset to the beginning
-    music1.play();
-});
 
 function loadTexture(texture, whichTexture)
 {
@@ -2532,4 +2541,4 @@ var render = function() {
     modelViewMatrix = MatrixStack.pop();
 
     requestAnimFrame(render);
-}
+};
