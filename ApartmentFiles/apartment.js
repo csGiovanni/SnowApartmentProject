@@ -9,6 +9,8 @@
  *  Building (Composite), Street Lamp(Polygonal Mesh), 
  *  Part 2:
  *  Street Lamp Pole (Surface of Revolution), Bench (Extruded Shape), Road (Third object of choice)
+ *  Part 3:
+ *  Christmas Tree, Snowman
  * 
  *  Giovanni Del Valle
  *  -------------------
@@ -16,6 +18,8 @@
  *  Trash Can (Polygonal Mesh), Traffic Cone (Composite), 
  *  Part 2;
  *  Archway (Extruded Shape), Fountain (Surface of Revolution), Snowflakes (Third object of choice)
+ *  Part 3:
+ *  Santa, Christmas Star
  * 
  * Version Control : GitHub
  */
@@ -81,6 +85,9 @@ var ApartmentDoorIndex, ApartmentDoorAmount;
 var StreetLampHeadIndex, StreetLampHeadAmount;
 var StreetLightIndex, StreeLightAmount;
 var StreetLampPoleIndex, StreetLampPoleAmount;
+
+var TrianglePrismIndex, TrianglePrismAmount;
+var PentagonPrismIndex, PentagonPrismAmount;
 
 var FlickerWaitInFrames = 80;
 var FlickerLength = 4;
@@ -767,6 +774,18 @@ function OctogonalExtrusion() {
     PillarIndex = pointsArray.length;
     ExtrudedPolygon(4);
     PillarAmount = pointsArray.length - PillarIndex;
+}
+
+function TrianglePrism() {
+    TrianglePrismIndex = pointsArray.length;
+    HalfExtrudedPolygon(2);
+    TrianglePrismAmount = pointsArray.length - TrianglePrismIndex
+}
+
+function PentagonPrism() {
+    PentagonPrismIndex = pointsArray.length;
+    ExtrudedPolygon(4);
+    PentagonPrismAmount = pointsArray.length - PentagonPrismIndex
 }
 
 function MakeTrashCan(strip_height, strip_width, can_radius) {
@@ -1743,6 +1762,17 @@ function DrawPillarExtrusion() {
     gl.drawArrays( gl.TRIANGLES, PillarIndex, PillarAmount );
 }
 
+function DrawTrianglePrism() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, TrianglePrismIndex, TrianglePrismAmount );
+}
+
+function DrawPentagonPrism() {
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays( gl.TRIANGLES, PentagonPrismIndex, PentagonPrismAmount );
+}
+
+
 function DrawArchway() {
     let width = 1.0;
     let height = 9.0;
@@ -1786,6 +1816,53 @@ function DrawArchway() {
     gl.uniform4fv(ambientProductLoc,
     flatten(ambientProduct) );
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+}
+
+function DrawChristmasStar() {
+    let yellow = vec4(4,4,0,4);
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, yellow)));
+ 
+     gl.uniform4fv(ambientProductLoc,
+     flatten(mult(lightAmbient, yellow)));
+     MatrixStack.push(modelViewMatrix);
+     modelViewMatrix = mult(modelViewMatrix, mult(
+        translate(0, 0.5, 0),
+        mult(rotate(-90, [1, 0, 0]), scale4(0.7, 0.7, 0.7))
+     ));
+     // Draw Star
+    {
+        for (let i = 0; i < 5; i++) {
+            MatrixStack.push(modelViewMatrix);
+            modelViewMatrix = mult(modelViewMatrix, mult(rotate(i * 360 / 5, [0, 1, 0]), translate(0, 0, 1)));
+            DrawTrianglePrism();
+            modelViewMatrix = MatrixStack.pop();
+        }
+    
+        MatrixStack.push(modelViewMatrix);
+        modelViewMatrix = mult(modelViewMatrix, scale4(1.35, 1, 1.35));
+        DrawPentagonPrism();
+        modelViewMatrix = MatrixStack.pop();   
+
+    }
+
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0, -2, 0), scale4(1, 2, 1)));
+    DrawCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+    
+        gl.uniform4fv(ambientProductLoc,
+        flatten(ambientProduct) );
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+    
 }
 
 // Fountain initial 2d line points for surface of revolution  (25 points)
@@ -1982,6 +2059,8 @@ window.onload = function init() {
     MakeTreeLeaves();
     HalfCircle();
     OctogonalExtrusion();
+    TrianglePrism();
+    PentagonPrism();
     SphereArc();
     Sphere();
 
@@ -2532,6 +2611,12 @@ var render = function() {
     modelViewMatrix = mult(modelViewMatrix, rotate(-15,[0,1,0]));
     modelViewMatrix = mult(modelViewMatrix, scale4(15, 15, 15));
     DrawTree();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix =  mult(modelViewMatrix, translate(50, 17, 10));
+    modelViewMatrix = mult(modelViewMatrix, scale4(0.5, 0.5, 0.5));
+    DrawChristmasStar()
     modelViewMatrix = MatrixStack.pop();
 
     MatrixStack.push(modelViewMatrix);
