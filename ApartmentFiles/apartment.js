@@ -1259,6 +1259,112 @@ function DrawSnowman(){
     gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
 }
 
+function DrawSantaHat() {
+    let red = rgb(255,2,2,255);
+    let white = vec4(6.0, 6.0, 6.0, 6.0);
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, red)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, red)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, scale4(1.0,1.7,1.0));
+    DrawCone();
+    modelViewMatrix = MatrixStack.pop();
+
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix, mult(translate(0, 1.8, 0), scale4(0.3, 0.3, 0.3)));
+    DrawSphere();
+    modelViewMatrix = MatrixStack.pop();
+}
+
+function DrawSanta() {
+    let white = vec4(6.0, 6.0, 6.0, 6.0);
+    let red = rgb(255,2,2,255);
+    let pale_skin = rgb(243, 194, 155, 255);
+    let brown = rgb(212, 59, 0, 255);
+
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, red)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, red)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+
+    // Draw Main body
+    MatrixStack.push(modelViewMatrix);
+    let transform = scale4(2, 2.2, 2);
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawSphere();
+    modelViewMatrix = MatrixStack.pop();
+    // White Undercoat
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, white)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, white)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+
+    MatrixStack.push(modelViewMatrix);
+    transform = mult(scale4(1, 3.2, 3), rotate(90, [0, 0, 1]));
+    transform = mult(translate(0.5,0,0.5), transform);
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Draw Head
+    // Choose Color
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, pale_skin)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, pale_skin)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+
+    MatrixStack.push(modelViewMatrix);
+    transform = translate(0, 4, 0);
+    modelViewMatrix = mult(modelViewMatrix, transform);
+    DrawSphere();
+    modelViewMatrix = MatrixStack.pop();
+
+    // Draw hat
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix = mult(modelViewMatrix,mult(translate(0, 5.2, -0.6), rotate(-30, [1, 0, 0])));
+    DrawSantaHat()
+    modelViewMatrix = MatrixStack.pop();
+
+    // Draw Belt
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(mult(lightDiffuse, brown)));
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(mult(lightAmbient, brown)));
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+    MatrixStack.push(modelViewMatrix);
+    let belt_scale = 3.4;
+    modelViewMatrix = mult(modelViewMatrix,mult(translate(0, -1, .2), scale4(belt_scale, 0.6, belt_scale)));
+    DrawCylinder();
+    modelViewMatrix = MatrixStack.pop();
+
+    // RESET COLOR
+    gl.uniform4fv(diffuseProductLoc,
+        flatten(diffuseProduct) );
+
+    gl.uniform4fv(ambientProductLoc,
+        flatten(ambientProduct) );
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+}
+
 function DrawTrashCan() {
     let red = rgb(245, 20, 0, 255);
     let black = rgb(0, 0, 0, 255);
@@ -2395,6 +2501,12 @@ var render = function() {
     modelViewMatrix = mult(modelViewMatrix, rotate(-15,[0,1,0]));
     modelViewMatrix = mult(modelViewMatrix, scale4(15, 15, 15));
     DrawTree();
+    modelViewMatrix = MatrixStack.pop();
+
+    MatrixStack.push(modelViewMatrix);
+    modelViewMatrix =  mult(modelViewMatrix, translate(5, 1.8, 10));
+    modelViewMatrix = mult(modelViewMatrix, scale4(0.5, 0.5, 0.5));
+    DrawSanta();
     modelViewMatrix = MatrixStack.pop();
 
     requestAnimFrame(render);
