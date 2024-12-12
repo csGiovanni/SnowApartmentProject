@@ -2210,6 +2210,28 @@ window.onload = function init() {
             doAnimate = !doAnimate;
             console.log("DOASDKOAD");
         }
+        // Reset scene position to initial position
+        if (event.key == 'b' || event.key == 'B') {
+            // Reset camera position to initial settings
+            AllInfo.zoomFactor = 1;
+            AllInfo.translateX = 0;
+            AllInfo.translateY = -0;
+            AllInfo.movementSpeed = 4;
+        
+            // Reset camera rotation to initial settings
+            AllInfo.phi = 1;
+            AllInfo.theta = 0.5;
+            AllInfo.radius = 1;
+            AllInfo.dr = 2.0 * Math.PI/180.0;
+        
+            // Reset mouse controls
+            AllInfo.mouseDownRight = false;
+            AllInfo.mouseDownLeft = false;
+            AllInfo.mousePosOnClickX = 0;
+            AllInfo.mousePosOnClickY = 0;
+
+            doAnimate = true;
+        }
     });
 
     window.addEventListener('keydown', function(event) {
